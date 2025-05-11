@@ -1,0 +1,57 @@
+# src/mock_apis/room_services.py
+import json
+from pathlib import Path
+from datetime import timedelta
+from schemas import Room
+from typing import List, Optional
+from draft.config_new import Config
+
+configs = Config()
+
+# Simulate parsing delay between bookings
+def load_rooms(file_path: Path= configs.ROOMS_FILE):
+    with open(file_path, 'r') as f:
+        return [Room(**room) for room in json.load(f)]
+
+def find_room_by_name(name: str) -> Optional[Room]:
+    rooms = load_rooms()
+    for room in rooms:
+        if room.name.lower() == name.lower():
+            return room
+    return None
+
+def find_room_by_id(id: int) -> Optional[Room]:
+    rooms = load_rooms()
+    for room in rooms:
+        if room.id == id:
+            return room
+    return None
+
+def find_room_by_capacity(capacity: int) -> Optional[Room]:
+    rooms = load_rooms()
+    for room in rooms:
+        if room.capacity == capacity:
+            return room
+    return None
+
+def find_rooms_by_equipments(equipments: List[str]) -> Optional[List[Room]]:
+    rooms = load_rooms()
+    matching_rooms = []
+
+    for room in rooms:
+        if all(feature in room.equipments for feature in equipments):
+            matching_rooms.append(room)
+
+    return matching_rooms if matching_rooms else None
+
+def is_exist_equipment(room: Room, equipments: List[str]) -> bool:
+    return any(eq in room.equipments for eq in equipments)
+
+def find_matching_rooms(capacity: int, equipments: List[str]) -> Optional[List[Room]]:
+    rooms = load_rooms()
+    available_rooms = []
+    for room in rooms:
+        if room.capacity >= capacity and is_exist_equipment(room, equipments):
+            available_rooms.append(room)
+
+    return available_rooms if available_rooms else None

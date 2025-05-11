@@ -1,0 +1,62 @@
+[
+  {
+    "room_id": 3,
+    "start_time": "2025-05-10T08:00:00",
+    "end_time": "2025-05-10T09:30:00",
+    "booked_by": "Yasmin El-Sayed"
+  },
+  {
+    "room_id": 1,
+    "start_time": "2025-05-10T13:00:00",
+    "end_time": "2025-05-10T15:00:00",
+    "booked_by": "Omar Khaled"
+  },
+  {
+    "room_id": 5,
+    "start_time": "2025-05-11T10:00:00",
+    "end_time": "2025-05-11T12:00:00",
+    "booked_by": "Lina Hassan"
+  },
+  {
+    "room_id": 2,
+    "start_time": "2025-05-11T14:00:00",
+    "end_time": "2025-05-11T16:30:00",
+    "booked_by": "Karim Mahmoud"
+  },
+  {
+    "room_id": 4,
+    "start_time": "2025-05-12T09:00:00",
+    "end_time": "2025-05-12T11:00:00",
+    "booked_by": "Nourhan Ali"
+  },
+  {
+    "room_id": 6,
+    "start_time": "2025-05-12T16:00:00",
+    "end_time": "2025-05-12T17:30:00",
+    "booked_by": "Ziad Ibrahim"
+  },
+  {
+    "room_id": 1,
+    "start_time": "2025-05-13T11:00:00",
+    "end_time": "2025-05-13T13:00:00",
+    "booked_by": "Farida Mostafa"
+  },
+  {
+    "room_id": 3,
+    "start_time": "2025-05-14T08:30:00",
+    "end_time": "2025-05-14T10:00:00",
+    "booked_by": "Tarek Nasr"
+  },
+  {
+    "room_id": 7,
+    "start_time": "2025-05-15T15:00:00",
+    "end_time": "2025-05-15T17:00:00",
+    "booked_by": "Dalia Samir"
+  },
+  {
+    "room_id": 2,
+    "start_time": "2025-05-16T10:15:00",
+    "end_time": "2025-05-16T12:15:00",
+    "booked_by": "Hossam Abdelrahman"
+  }
+]

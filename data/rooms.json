@@ -1,0 +1,299 @@
+[
+  {
+    "id": 1,
+    "name": "Executive Suite",
+    "capacity": 8,
+    "equipments": [
+      "Smart Board",
+      "Conference Phone",
+      "Mini Fridge"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Tech Hub",
+    "capacity": 12,
+    "equipments": [
+      "4K Projector",
+      "Video Conferencing",
+      "Charging Stations"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Zen Den",
+    "capacity": 4,
+    "equipments": [
+      "White Noise Machine",
+      "Plants",
+      "Natural Light"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "War Room",
+    "capacity": 15,
+    "equipments": [
+      "Whiteboard Walls",
+      "Multiple Screens",
+      "Coffee Machine"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Huddle Space",
+    "capacity": 6,
+    "equipments": [
+      "TV Monitor",
+      "Wireless Presentation"
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Creative Lab",
+    "capacity": 10,
+    "equipments": [
+      "Interactive Display",
+      "Sketch Tables",
+      "VR Setup"
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Focus Pod",
+    "capacity": 1,
+    "equipments": [
+      "Noise-Canceling",
+      "Adjustable Lighting"
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Grand Ballroom",
+    "capacity": 100,
+    "equipments": [
+      "Stage",
+      "PA System",
+      "Lighting Rig"
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Sunroom",
+    "capacity": 5,
+    "equipments": [
+      "Natural Light",
+      "Outdoor View",
+      "Plants"
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Telepresence Room",
+    "capacity": 8,
+    "equipments": [
+      "HD Cameras",
+      "Spatial Audio",
+      "Virtual Background"
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Library Nook",
+    "capacity": 3,
+    "equipments": [
+      "Bookshelves",
+      "Reading Lights",
+      "Quiet Zone"
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Training Room A",
+    "capacity": 20,
+    "equipments": [
+      "Projector",
+      "Flipcharts",
+      "Laptop Connections"
+    ]
+  },
+  {
+    "id": 13,
+    "name": "Theater",
+    "capacity": 50,
+    "equipments": [
+      "Projector",
+      "Surround Sound",
+      "Tiered Seating"
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Brainstorm Box",
+    "capacity": 6,
+    "equipments": [
+      "Whiteboard Paint Walls",
+      "Post-Its",
+      "Markers"
+    ]
+  },
+  {
+    "id": 15,
+    "name": "Executive Lounge",
+    "capacity": 10,
+    "equipments": [
+      "Leather Seating",
+      "Fireplace",
+      "Bar"
+    ]
+  },
+  {
+    "id": 16,
+    "name": "VR Studio",
+    "capacity": 4,
+    "equipments": [
+      "VR Headsets",
+      "Motion Tracking",
+      "Green Screen"
+    ]
+  },
+  {
+    "id": 17,
+    "name": "Aqua Room",
+    "capacity": 8,
+    "equipments": [
+      "Water Feature",
+      "Relaxation Sounds",
+      "Mood Lighting"
+    ]
+  },
+  {
+    "id": 18,
+    "name": "Boardroom Gold",
+    "capacity": 12,
+    "equipments": [
+      "Mahogany Table",
+      "Executive Chairs",
+      "Art Collection"
+    ]
+  },
+  {
+    "id": 19,
+    "name": "Podcast Studio",
+    "capacity": 3,
+    "equipments": [
+      "Soundproofing",
+      "Mics",
+      "Mixing Board"
+    ]
+  },
+  {
+    "id": 20,
+    "name": "Wellness Room",
+    "capacity": 2,
+    "equipments": [
+      "Massage Chair",
+      "Aromatherapy",
+      "Meditation Cushions"
+    ]
+  },
+  {
+    "id": 21,
+    "name": "Gaming Lounge",
+    "capacity": 6,
+    "equipments": [
+      "Consoles",
+      "Gaming PCs",
+      "Racing Simulator"
+    ]
+  },
+  {
+    "id": 22,
+    "name": "Winter Garden",
+    "capacity": 15,
+    "equipments": [
+      "Glass Ceiling",
+      "Heated Floors",
+      "Seasonal Plants"
+    ]
+  },
+  {
+    "id": 23,
+    "name": "Silicon Valley",
+    "capacity": 10,
+    "equipments": [
+      "Standing Desks",
+      "Robotics Kit",
+      "3D Printer"
+    ]
+  },
+  {
+    "id": 24,
+    "name": "Whisper Room",
+    "capacity": 2,
+    "equipments": [
+      "Soundproof Booth",
+      "Acoustic Panels"
+    ]
+  },
+  {
+    "id": 25,
+    "name": "Sky Lounge",
+    "capacity": 30,
+    "equipments": [
+      "Panoramic Windows",
+      "Telescope",
+      "Bar"
+    ]
+  },
+  {
+    "id": 26,
+    "name": "Retro Room",
+    "capacity": 5,
+    "equipments": [
+      "Record Player",
+      "Vintage Decor",
+      "Typewriter"
+    ]
+  },
+  {
+    "id": 27,
+    "name": "Infinity Room",
+    "capacity": 4,
+    "equipments": [
+      "Mirror Walls",
+      "LED Lighting",
+      "Ambient Music"
+    ]
+  },
+  {
+    "id": 28,
+    "name": "Bamboo Room",
+    "capacity": 8,
+    "equipments": [
+      "Sustainable Materials",
+      "Indoor Garden",
+      "Air Purifiers"
+    ]
+  },
+  {
+    "id": 29,
+    "name": "Neon Den",
+    "capacity": 6,
+    "equipments": [
+      "LED Art",
+      "Disco Ball",
+      "Karaoke Machine"
+    ]
+  },
+  {
+    "id": 30,
+    "name": "Treehouse",
+    "capacity": 4,
+    "equipments": [
+      "Wood Interior",
+      "Nature Sounds",
+      "Balcony"
+    ]
+  }
+]
