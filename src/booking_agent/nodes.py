@@ -36,8 +36,6 @@ def parse_request(state: AgentState) -> AgentState:
 
     parsed_data = chain.invoke({"user_request": conversation_context,
                                 "current_date": current_date})
-    
-    print("Parsed data:", parsed_data)
     state.update({
             "parsed_request": parsed_data.model_dump(),
             "clarification_needed": parsed_data.clarification_needed,

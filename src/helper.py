@@ -64,6 +64,28 @@ MISSING_EXAMPLE = {
     "clarification_question": "Could you tell me the meeting's start time and duration?" 
 }
 
+# Default agent state structure
+DEFAULT_AGENT_STATE = {
+    'user_input': None,
+    'llm_response': None,
+    'messages': [],
+    'parsed_request': {
+        'start_time': None,
+        'duration_hours': None,
+        'capacity': None,
+        'equipments': None,
+        'user_name': None
+    },
+    'clarification_needed': False,
+    'clarification_question': None,
+    'user_name_for_booking': None,
+    'matching_rooms': None,
+    'available_room_options': None,
+    'selected_room_option_id': None,
+    'user_booking_confirmation_response': None,
+    'booking_result': None,
+    'error_message': None
+}
 
 def get_llm(name: str):
 

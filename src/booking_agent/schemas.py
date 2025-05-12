@@ -41,7 +41,7 @@ class AgentState(TypedDict):
 # Pydantic model for parsing (from Choice 2)
 class BookingRequest(BaseModel):
     start_time: Optional[str] = Field(None, description="ISO format, e.g., 2025-07-16T10:00:00")
-    duration_hours: Optional[int] = Field(None, description="Duration in hours")
+    duration_hours: Optional[float] = Field(None, description="Duration in hours")
     capacity: Optional[int] = Field(None, description="Room capacity")
     equipments: Optional[List[str]] = Field(None, description="List of equipment")
     user_name: Optional[str] = Field(None, description="Name of the user")
