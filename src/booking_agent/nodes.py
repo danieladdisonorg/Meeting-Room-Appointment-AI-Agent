@@ -23,10 +23,15 @@ def parse_request(state: AgentState) -> AgentState:
     # apply my predefined prompt template
     prompt_template = apply_prompt_template(parser)
     # get the current date and time
-    current_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    current_time = datetime.now().strftime('%H:%M:%S') # AM or PM?
+
     # define LLM and the Chain
     llm = get_llm(name="groq")
     chain = prompt_template | llm | parser
+
+    logger.info(">>>>>>>>>>>>>>> CURRENT DATE:", current_date)
+    logger.info(">>>>>>>>>>>>>>> CURRENT TIME:", current_date)
 
     state["messages"].append(HumanMessage(content=state['user_input']))
     # Build full request context from conversation history
@@ -34,9 +39,12 @@ def parse_request(state: AgentState) -> AgentState:
         f"{'USER' if isinstance(msg, HumanMessage) else 'AGENT'}: {msg.content}"
         for msg in state["messages"]
     )
-
     parsed_data = chain.invoke({"user_request": conversation_context,
-                                "current_date": current_date})
+                                "current_date": current_date,
+                                "current_time": current_time})
+    
+    logger.info(f"PARSED REQUEST: {state['parsed_request']}")
+
     state.update({
             "parsed_request": parsed_data.model_dump(),
             "clarification_needed": parsed_data.clarification_needed,
@@ -44,7 +52,7 @@ def parse_request(state: AgentState) -> AgentState:
             "user_name_for_booking": parsed_data.user_name,
             "error_message": None
         })
-        
+    
     return state
 
 # NODE [02]. Ask Clarification Node
@@ -94,13 +102,23 @@ def search_alternative_rooms(state: AgentState) -> AgentState:
     logger.info(" ------------------ NODE: SEARCH ALTERNATIVE ROOMS ------------------ ")
     return state
 
-
-def confirm_booking_node(state: AgentState) -> AgentState:
+def confirm_booking(state: AgentState) -> AgentState:
     logger.info(" ------------------ NODE: CONFIRM BOOKING ------------------ ")
     state["user_booking_confirmation"] = "yes"
     state["llm_response"] = "Booking Confirmed for room {}".format(state["selected_room"])
     return state
 
+def find_booking_options(state: AgentState) -> AgentState:
+    logger.info(" ------------------ NODE: GET AVAILABLE ROOMS ------------------ ")
+    state = find_booking_options(state)
+    state = select_room(state)
+    state = confirm_booking_node(state)
+    return state
+
+def inform_user(state: AgentState) -> AgentState:
+    logger.info(" ------------------ NODE: INFORM USER ------------------ ")
+    state["messages"].append(SystemMessage(content=state["llm_response"]))
+    return state
 ########################################################################
 # CONDITIONS: 
 ########################################################################

@@ -36,7 +36,7 @@
             {% for msg in session.agent_state['messages'] %}
             <div class="message {% if msg.type == 'human' %}user-message{% else %}agent-message{% endif %}">
                 <div class="message-icon">
-                    <img src="{% if msg.type == 'human' %}https://img.icons8.com/ios/50/000000/user.png{% else %}https://cdn-icons-png.flaticon.com/512/16869/16869849.png{% endif %}"
+                    <img src="{% if msg.type == 'human' %}https://cdn0.iconfinder.com/data/icons/user-interface-706/24/User_Icon-512.png{% else %}https://cdn-icons-png.flaticon.com/512/16869/16869849.png{% endif %}"
                         alt="icon">
                 </div>
                 <div class="message-content">

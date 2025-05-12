@@ -39,22 +39,25 @@ ROOMS_FILE = PROJECT_DIR / "data/rooms.json"
 BOOKINGS_FILE = PROJECT_DIR / "data/bookings.json"
 LOGS_DIR = PROJECT_DIR / "logs"
 
-# Ensure logs directory exists
-LOGS_DIR.mkdir(parents=True, exist_ok=True)
-
-# Create log file with current datetime
-current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-log_file_path = LOGS_DIR / f"log_{current_datetime}.log"
 
 # Logging Configuration
 recursion_limit = 50
 # sys.setrecursionlimit(recursion_limit)
 DELAY = timedelta(hours=0.5)
 
+# Ensure logs directory exists
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Create log file with current date
+current_date = datetime.now().strftime("%Y-%m-%d")
+log_file_path = LOGS_DIR / f"log_{current_date}.log"
+
+# Logging Configuration
 logging.basicConfig(
     filename=log_file_path,
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filemode='a'  # Append mode to write in the same file for each run per day
 )
 
 logger = logging.getLogger(__name__)

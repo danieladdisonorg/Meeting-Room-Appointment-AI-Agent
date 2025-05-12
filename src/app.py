@@ -4,7 +4,8 @@
 import uuid
 from flask import Flask, request, render_template, session, redirect, url_for
 from booking_agent.workflow import create_workflow
-from helper import DEFAULT_AGENT_STATE, dict_to_message, message_to_dict
+from helper import dict_to_message, message_to_dict
+from booking_agent.prompt_config import DEFAULT_AGENT_STATE
 from config import FlaskConfig
 
 app = Flask(__name__)
