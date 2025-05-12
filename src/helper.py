@@ -8,7 +8,9 @@ from langchain.prompts import PromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain.output_parsers import PydanticOutputParser
 
-from booking_agent.schemas import AgentState
+from typing import List
+
+from booking_agent.schemas import Room
 from booking_agent.prompt_config import TEMPLATE, SUCCESS_EXAMPLE, MISSING_EXAMPLE
 
 from config import (
@@ -36,7 +38,7 @@ def get_llm(name: str):
 
 def apply_prompt_template(parsing_schema: PydanticOutputParser) -> PromptTemplate: 
     prompt_template = PromptTemplate(
-    input_variables=["user_request", "current_date"],
+    input_variables=["user_request", "current_date", "current_time"],
     template=TEMPLATE,
     partial_variables= {
     "parsing_schema": parsing_schema,
@@ -58,6 +60,30 @@ def dict_to_message(data):
     if data['type'] == 'human':
         return HumanMessage(**data)
     return SystemMessage(**data)
+
+def format_booking_rooms_msg(rooms: List[Room]):
+    """
+    Generate a user-friendly message listing available rooms.
+    """
+    room_messages = [
+        f"Room '{room['type']}' with a capacity of {room['capacity']} people "
+        f"and equipped with {', '.join(room['equipments'])}."
+        for room in rooms
+    ]
+    return "Here are the available rooms:\n" + "\n".join(room_messages)
+
+def format_available_times_msg(available_times: dict) -> str:
+    """
+    Generate a user-friendly message listing available times for matching rooms.
+    """
+    if not available_times:
+        return "No available times found for the matching rooms."
+
+    messages = [
+        f"Room '{room}' is available at the following times: {', '.join(times)}"
+        for room, times in available_times.items()
+    ]
+    return "Here are the available times for the matching rooms:\n" + "\n".join(messages)
 
 #### Deprecated: Let LLM handle the clarifications ####
 # def get_clarification_question(state: AgentState) -> str:

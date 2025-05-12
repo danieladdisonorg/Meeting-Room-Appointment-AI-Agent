@@ -46,7 +46,7 @@ def create_workflow():
 
     workflow.add_conditional_edges(
         "find_booking_options_node",
-        lambda state: state["available_room_options"] is not None,
+        lambda state: state["available_rooms"] is not None,
         {
             True: "confirm_booking_node",
             False: "handle_error_node"

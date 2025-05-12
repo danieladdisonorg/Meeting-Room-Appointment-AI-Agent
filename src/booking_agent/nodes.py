@@ -9,7 +9,10 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from mock_apis import booking_services, room_services
 from booking_agent.schemas import AgentState, BookingRequest, Room
-from helper import get_llm, apply_prompt_template
+from helper import (
+    get_llm, apply_prompt_template, 
+    format_booking_rooms_msg, format_available_times_msg
+)
 from config import logger
 
 ##=======================================================================
@@ -18,20 +21,19 @@ from config import logger
 # NODE [01]. Parsing user requests Node
 def parse_request(state: AgentState) -> AgentState:
     logger.info(" ------------------ NODE: PARSE REQUEST ------------------ ")
-    # initialize parser
+    # initialization
     parser = PydanticOutputParser(pydantic_object=BookingRequest)
-    # apply my predefined prompt template
     prompt_template = apply_prompt_template(parser)
-    # get the current date and time
-    current_date = datetime.now().strftime('%Y-%m-%d')
-    current_time = datetime.now().strftime('%H:%M:%S') # AM or PM?
-
-    # define LLM and the Chain
     llm = get_llm(name="groq")
     chain = prompt_template | llm | parser
+    
+    # get the current date and time
+    current_date = datetime.now().strftime('%Y-%m-%d')    # e.g, 2025-05-12
+    current_time = datetime.now().strftime('%I:%M:%S %p') # e.g, 02:45:30 PM
 
-    logger.info(">>>>>>>>>>>>>>> CURRENT DATE:", current_date)
-    logger.info(">>>>>>>>>>>>>>> CURRENT TIME:", current_date)
+    # logger.info(prompt_template)
+    logger.info(" >>>>>>> CURRENT DATE:", current_date)
+    logger.info(" >>>>>>> CURRENT TIME:", current_time)
 
     state["messages"].append(HumanMessage(content=state['user_input']))
     # Build full request context from conversation history
@@ -43,7 +45,7 @@ def parse_request(state: AgentState) -> AgentState:
                                 "current_date": current_date,
                                 "current_time": current_time})
     
-    logger.info(f"PARSED REQUEST: {state['parsed_request']}")
+    logger.info(f"PARSED REQUEST: {parsed_data.model_dump()}")
 
     state.update({
             "parsed_request": parsed_data.model_dump(),
@@ -65,6 +67,16 @@ def ask_clarification(state: AgentState) -> AgentState:
 # NODE [03]. Handle Error Node
 def handle_error(state: AgentState) -> AgentState:
     logger.info(" ------------------ NODE: HANDLE ERROR ------------------ ")
+
+    if state["matching_rooms"] is None:
+        state["error_message"] = "No matching rooms found."
+
+    elif state["available_rooms"] is None:
+        state["error_message"] = "No available rooms found."
+    else:
+        state["error_message"] = "An unknown error occurred."
+
+    logger.info(state["error_message"])
     state["llm_response"] = state.get("error_message", "An unknown error occurred.")
     state["messages"].append(SystemMessage(content=state["llm_response"]))
     state["clarification_needed"] = False
@@ -72,16 +84,21 @@ def handle_error(state: AgentState) -> AgentState:
 
 def find_matching_rooms(state: AgentState) -> AgentState:
     logger.info(" ------------------ NODE: GET MATCHING ROOMS ------------------ ")
+    
     capacity = state["parsed_request"]["capacity"]
     equipments = state["parsed_request"]["equipments"]
     matching_rooms = room_services.find_matching_rooms(capacity, equipments)
+    
     state["matching_rooms"] = matching_rooms if len(matching_rooms) > 0 else None
+    logger.info(" >>>>>>> MATCHING ROOMS:", state.get("matching_rooms", "NO MATCHING ROOMS"))
+    
     return state
 
 def find_booking_options(state: AgentState) -> bool:
     logger.info(" ------------------ NODE: GET AVAILABLE ROOMS ------------------ ")
     
     available_rooms = []
+
     for room in state["matching_rooms"]:
         is_conflict = booking_services.is_time_conflict(room['id'],
                                                         state["parsed_request"]["start_time"],
@@ -89,13 +106,30 @@ def find_booking_options(state: AgentState) -> bool:
         if is_conflict: continue
         else: available_rooms.append(room)
     
-    state["available_room_options"] = available_rooms if len(available_rooms)>0 else None
-    
+    state["available_rooms"] = available_rooms if len(available_rooms)>0 else None
+    logger.info(" >>>>>>> AVAILABLE ROOMS:", state.get("available_rooms", "NO FREE AVAILABLE ROOMS"))
+    state["llm_response"] = format_booking_rooms_msg(state["available_rooms"])
+
+    return state
+
+def find_available_times(state: AgentState) -> AgentState:
+    logger.info(" ------------------ NODE: FIND AVAILABLE TIMES ------------------ ")
+
+    available_times = {}
+    for room in state["matching_rooms"]:
+        available_times[room['type']] = booking_services.get_available_times(room['id'])
+
+    state["llm_response"] = format_available_times_msg(available_times)
+    state["messages"].append(SystemMessage(content=state["llm_response"]))
+
     return state
 
 def select_room(state: AgentState) -> AgentState:
     logger.info(" ------------------ NODE: SELECT ROOM ------------------ ")
-    state["selected_room"] = state["available_room_options"][0]
+    state["selected_room"] = state["available_rooms"][0]
+    state["llm_response"] = format_booking_rooms_msg([state["selected_room"]])
+    state["messages"].append(SystemMessage(content=state["llm_response"]))
+
     return state
 
 def search_alternative_rooms(state: AgentState) -> AgentState:
@@ -126,13 +160,13 @@ def inform_user(state: AgentState) -> AgentState:
 def is_clear_request(state: AgentState) -> str:
     logger.info(" --->>>> CONDITION: Check Valid and Clear Request <<<<--- ")
     if state.get("error_message"):
-        logger.info("----> Error detected")
+        logger.info(" >>>>>>> Error detected")
         return "handle_error"
     elif state.get("clarification_needed"):
-        logger.info("----> Clarification needed")
+        logger.info(" >>>>>>> Clarification needed")
         return "ask_clarification"
     else:
-        logger.info("----> Ready to book room")
+        logger.info(" >>>>>>> Ready to book room")
         return "find_matching_rooms"
 
 # CONDITION [2]. Check if user confirm booking

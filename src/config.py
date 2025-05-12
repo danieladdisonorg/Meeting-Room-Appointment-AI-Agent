@@ -64,8 +64,11 @@ logger = logging.getLogger(__name__)
 
 
 class FlaskConfig:
+    """Flask application configuration."""
     FLASK_APP = os.getenv('FLASK_APP', 'src.app')
     FLASK_ENV = os.getenv('FLASK_ENV', 'development')
     SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
     DEBUG = os.getenv('FLASK_DEBUG', '1') == '1'
-    PERMANENT_SESSION_LIFETIME = timedelta(hours=1)
+    PORT = os.getenv('PORT', '5000')
+    HOST = os.getenv('HOST', '127.0.0.1')
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=5)
