@@ -53,3 +53,20 @@ def find_matching_rooms(capacity: int, equipments: List[str]) -> Optional[List[R
             available_rooms.append(room)
 
     return available_rooms
+
+def find_similar_rooms(capacity: int, equipments: list, top_n: int = 3):
+    """
+    Find rooms with at least the required capacity and the most equipment overlap.
+    Returns up to top_n rooms.
+    """
+    rooms = load_rooms() 
+    scored_rooms = []
+    
+    for room in rooms:
+        if room['capacity'] >= capacity:
+            overlap = len(set(room['equipments']) & set(equipments))
+            scored_rooms.append((overlap, room))
+
+    scored_rooms.sort(reverse=True, key=lambda x: x[0])
+    return [room for overlap, room in scored_rooms if overlap > 0][:top_n]
+

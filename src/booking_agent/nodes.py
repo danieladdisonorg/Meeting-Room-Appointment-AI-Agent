@@ -83,32 +83,42 @@ def handle_error(state: AgentState) -> AgentState:
     return END
 
 def find_matching_rooms(state: AgentState) -> AgentState:
+    """
+    Find all rooms that match the user's requirements (capacity, equipment).
+    """
     logger.info(" ------------------ NODE: GET MATCHING ROOMS ------------------ ")
     
     capacity = state["parsed_request"]["capacity"]
     equipments = state["parsed_request"]["equipments"]
     matching_rooms = room_services.find_matching_rooms(capacity, equipments)
     
-    state["matching_rooms"] = matching_rooms if len(matching_rooms) > 0 else None
-    logger.info(" >>>>>>> MATCHING ROOMS:", state.get("matching_rooms", "NO MATCHING ROOMS"))
+    state["matching_rooms"] = matching_rooms # if len(matching_rooms) > 0 else None
+    logger.info(" >>>>>>> MATCHING ROOMS: %s", state.get("matching_rooms", "NO MATCHING ROOMS"))
     
     return state
 
 def find_booking_options(state: AgentState) -> bool:
+    """
+    For each matching room, check if it's available at the requested time.
+    """
     logger.info(" ------------------ NODE: GET AVAILABLE ROOMS ------------------ ")
     
     available_rooms = []
-
+    unavailable_rooms = []
     for room in state["matching_rooms"]:
-        is_conflict = booking_services.is_time_conflict(room['id'],
-                                                        state["parsed_request"]["start_time"],
-                                                        state["parsed_request"]["duration_hours"])
-        if is_conflict: continue
-        else: available_rooms.append(room)
-    
-    state["available_rooms"] = available_rooms if len(available_rooms)>0 else None
+        is_conflict = booking_services.is_time_conflict(
+                        room['id'],
+                        state["parsed_request"]["start_time"],
+                        state["parsed_request"]["duration_hours"]
+                )
+        if not is_conflict: available_rooms.append(room)
+        else: unavailable_rooms.append(room)
+
+    state["available_rooms"] = available_rooms
+    state["un_available_rooms"] = unavailable_rooms
+    logger.info(" >>>>>>> UNAVAILABLE ROOMS:", state.get("un_available_rooms", "NO UNAVAILABLE ROOMS"))
     logger.info(" >>>>>>> AVAILABLE ROOMS:", state.get("available_rooms", "NO FREE AVAILABLE ROOMS"))
-    state["llm_response"] = format_booking_rooms_msg(state["available_rooms"])
+    # state["llm_response"] = format_booking_rooms_msg(state["available_rooms"])
 
     return state
 
@@ -132,8 +142,22 @@ def select_room(state: AgentState) -> AgentState:
 
     return state
 
-def search_alternative_rooms(state: AgentState) -> AgentState:
-    logger.info(" ------------------ NODE: SEARCH ALTERNATIVE ROOMS ------------------ ")
+def suggest_alternative_times(state: AgentState) -> AgentState:
+    """
+    For rooms that match requirements but are not available at the requested time, 
+    the agent should find and suggest their next available time slots.
+    """
+    logger.info(" ------------------ NODE: SEARCH ALTERNATIVE TIMES ------------------ ")
+    
+    alternative_times = {}
+    for room in state["matching_rooms"]:
+        if room["type"] == state["selected_room"]["type"]:
+            times = booking_services.get_available_times(room["id"])
+            alternative_times[room["id"]] =times
+
+    state["llm_response"] = format_available_times_msg(alternative_times)
+    state["messages"].append(SystemMessage(content=state["llm_response"]))
+
     return state
 
 def confirm_booking(state: AgentState) -> AgentState:
@@ -179,3 +203,6 @@ def is_confirmed(state: AgentState) -> bool:
         state["clarification_question"] = "Booking Not Confimed. Do you want to book another room?"
         return False
 
+def should_suggest_alternatives(state: AgentState) -> bool:
+    
+    return len(state.get("available_rooms", [])) == 0
