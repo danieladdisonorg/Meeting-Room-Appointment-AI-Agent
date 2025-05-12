@@ -3,17 +3,16 @@ import json
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Optional
-from schemas import Booking
-from draft.config_new import Config
+from booking_agent.schemas import Booking
+from config import BOOKINGS_FILE, DELAY
 
-configs = Config()
 
-def load_bookings(file_path: Path=configs.BOOKINGS_FILE):
+def load_bookings(file_path: Path=BOOKINGS_FILE):
     with open(file_path, "r") as f:
         return [Booking(**booking) for booking in json.load(f)]
 
 def save_bookings(bookings: List[Booking]):
-    with open(configs.BOOKINGS_FILE, "w") as f:
+    with open(BOOKINGS_FILE, "w") as f:
         json_list = [booking.model_dump() for booking in bookings]
         json.dump(json_list, f, indent=4)
 
@@ -31,7 +30,7 @@ def is_time_conflict(room_id: int,
             continue
         
         booking_start = datetime.fromisoformat(booking.start_time)
-        booking_end = datetime.fromisoformat(booking.end_time) + configs.DELAY
+        booking_end = datetime.fromisoformat(booking.end_time) + DELAY
 
         # Check if the booking time conflicts with the new booking
         if start_time < booking_end and end_time > booking_start:

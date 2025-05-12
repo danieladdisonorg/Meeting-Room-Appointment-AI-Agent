@@ -2,14 +2,12 @@
 import json
 from pathlib import Path
 from datetime import timedelta
-from schemas import Room
+from booking_agent.schemas import Room
 from typing import List, Optional
-from draft.config_new import Config
-
-configs = Config()
+from config import ROOMS_FILE
 
 # Simulate parsing delay between bookings
-def load_rooms(file_path: Path= configs.ROOMS_FILE):
+def load_rooms(file_path: Path= ROOMS_FILE):
     with open(file_path, 'r') as f:
         return [Room(**room) for room in json.load(f)]
 

@@ -1,15 +1,23 @@
 # src/config.py
+"""Configuration file for the booking agent."""
+
 import os
+import sys
+import logging
 from pathlib import Path
 from dotenv import load_dotenv
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 # Load Environment Variables
-dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-load_dotenv(dotenv_path=dotenv_path, override=True)
+# dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+# load_dotenv(dotenv_path=dotenv_path, override=True)
 
-project_dir = Path(__file__).resolve().parent.parent
-os.chdir(project_dir)
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(PROJECT_DIR / '.env', override=True)
+
+# App
+PROJECT_NAME = os.environ["PROJECT_NAME"]
+FLASK_SECRET_KEY = os.environ["FLASK_SECRET_KEY"]
 
 # LLM Configuration
 GROQ_API_KEY = os.environ["GROQ_API_KEY"]
@@ -25,11 +33,36 @@ GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 LANGCHAIN_TRACING_V2 = os.environ["LANGCHAIN_TRACING_V2"]
 LANGCHAIN_ENDPOINT = os.environ["LANGCHAIN_ENDPOINT"]
 LANGCHAIN_API_KEY = os.environ["LANGCHAIN_API_KEY"]
-LANGCHAIN_PROJECT = os.environ["LANGCHAIN_PROJECT"]
 
 # File Paths
-ROOMS_FILE = Path("data/rooms.json")
-BOOKINGS_FILE = Path("data/bookings.json")
+ROOMS_FILE = PROJECT_DIR / "data/rooms.json"
+BOOKINGS_FILE = PROJECT_DIR / "data/bookings.json"
+LOGS_DIR = PROJECT_DIR / "logs"
 
-recursion_limit = 100
+# Ensure logs directory exists
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Create log file with current datetime
+current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+log_file_path = LOGS_DIR / f"log_{current_datetime}.log"
+
+# Logging Configuration
+recursion_limit = 50
+# sys.setrecursionlimit(recursion_limit)
 DELAY = timedelta(hours=0.5)
+
+logging.basicConfig(
+    filename=log_file_path,
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger(__name__)
+
+
+class FlaskConfig:
+    FLASK_APP = os.getenv('FLASK_APP', 'src.app')
+    FLASK_ENV = os.getenv('FLASK_ENV', 'development')
+    SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
+    DEBUG = os.getenv('FLASK_DEBUG', '1') == '1'
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=1)

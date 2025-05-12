@@ -1,6 +1,7 @@
 __pycache__/
 
 draft/
+logs/
 .obsidian/
 .env
 

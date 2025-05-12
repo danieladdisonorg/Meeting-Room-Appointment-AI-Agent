@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Room Booking Agent</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        .chat-container {
+            height: 60vh;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .user-message {
+            background-color: #e3f2fd;
+            border-radius: 15px 15px 0 15px;
+            padding: 10px 15px;
+            margin-left: 25%;
+            margin-bottom: 10px;
+        }
+
+        .agent-message {
+            background-color: #ffffff;
+            border-radius: 15px 15px 15px 0;
+            padding: 10px 15px;
+            margin-right: 25%;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-align: right;
+        }
+
+        .input-group {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="text-center mb-4">
+                    <h1 class="display-5">Meeting Room Booking Agent</h1>
+                    <p class="text-muted">Book your meeting rooms with AI assistance</p>
+                </div>
+
+                <!-- Chat Container -->
+                <div class="chat-container shadow-sm" id="chatWindow">
+                    {% for msg in session.agent_state.messages %}
+                    <div class="{% if msg.type == 'human' %}user-message{% else %}agent-message{% endif %}">
+                        <strong>{% if msg.type == 'human' %}You{% else %}Agent{% endif %}:</strong>
+                        <p>{{ msg.content }}</p>
+                        <div class="message-time">
+                            {{ msg.additional_kwargs.timestamp if msg.additional_kwargs.timestamp else '' }}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% if response %}
+                    <div class="agent-message">
+                        <strong>Agent:</strong>
+                        <p>{{ response }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Input Form -->
+                <form method="POST" action="{{ url_for('booking') }}" class="mb-3">
+                    <div class="input-group">
+                        <input type="text" name="user_input" class="form-control"
+                            placeholder="Type your request (e.g., 'Book a room for 5 people tomorrow')" required>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send-fill"></i> Send
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Reset Button -->
+                <div class="text-center">
+                    <a href="{{ url_for('reset') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> Start New Booking
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Auto-scroll chat to bottom -->
+    <script>
+        window.onload = function () {
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        };
+    </script>
+</body>
+
+</html>

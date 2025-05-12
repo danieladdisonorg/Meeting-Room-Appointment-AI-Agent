@@ -1,9 +1,10 @@
-# src/schemas.py
+# src//booking_agent/schemas.py
+"""Pydantic models for data validation in booking meeting rooms."""
 
 from pydantic import BaseModel, Field
-from typing import Tuple, List, Dict, Optional, Annotated
-from enum import Enum
 from typing_extensions import TypedDict
+from typing import Union, List, Dict, Optional
+from langchain_core.messages import HumanMessage, SystemMessage
 
 class Booking(BaseModel):
     room_id: int
@@ -19,21 +20,23 @@ class Room(BaseModel):
 
 ## Agent State Definition as a TypedDict
 class AgentState(TypedDict):
-    # messages: Annotated[list, lambda x, y: x + y]
-    original_request: str
+    user_input: str
+    llm_response: Optional[str]
+
+    messages: List[Union[HumanMessage, SystemMessage]] 
+
     parsed_request: Optional[Dict] 
     clarification_needed: bool
     clarification_question: Optional[str]
+    user_name_for_booking: Optional[str] # Extracted from the request
     
     matching_rooms: Optional[List[Dict]]
     available_room_options: Optional[List[Dict]]
     selected_room_option_id: Optional[str] 
-    user_name_for_booking: Optional[str] # Extracted or asked
     user_booking_confirmation_response: Optional[str] # e.g., "yes" or "no"
     
     booking_result: Optional[Dict]
     error_message: Optional[str]
-    final_response_to_user: Optional[str]
 
 # Pydantic model for parsing (from Choice 2)
 class BookingRequest(BaseModel):
