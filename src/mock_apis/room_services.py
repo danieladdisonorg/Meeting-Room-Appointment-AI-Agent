@@ -52,4 +52,4 @@ def find_matching_rooms(capacity: int, equipments: List[str]) -> Optional[List[R
         if room.capacity >= capacity and is_exist_equipment(room, equipments):
             available_rooms.append(room)
 
-    return available_rooms if available_rooms else None
+    return available_rooms

@@ -32,10 +32,9 @@ class AgentState(TypedDict):
     
     matching_rooms: Optional[List[Dict]]
     available_room_options: Optional[List[Dict]]
-    selected_room_option_id: Optional[str] 
-    user_booking_confirmation_response: Optional[str] # e.g., "yes" or "no"
+    selected_room: Optional[Room] 
+    user_booking_confirmation: Optional[str] # e.g., "yes" or "no"
     
-    booking_result: Optional[Dict]
     error_message: Optional[str]
 
 # Pydantic model for parsing (from Choice 2)

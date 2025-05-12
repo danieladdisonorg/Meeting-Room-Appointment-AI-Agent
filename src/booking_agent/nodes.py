@@ -7,16 +7,17 @@ from langgraph.graph import END
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from booking_agent.schemas import AgentState, BookingRequest
+from mock_apis import booking_services, room_services
+from booking_agent.schemas import AgentState, BookingRequest, Room
 from helper import get_llm, apply_prompt_template
+from config import logger
 
-REQUIRED_FIELDS = ["start_time", "duration_hours", "capacity", "equipments", "user_name"]
-
-########################################################################
-# NODES: 
-########################################################################
+##=======================================================================
+# NODE FUNCTIONS
+##=======================================================================
+# NODE [01]. Parsing user requests Node
 def parse_request(state: AgentState) -> AgentState:
-    print("---NODE: PARSE REQUEST---")
+    logger.info(" ------------------ NODE: PARSE REQUEST ------------------ ")
     # initialize parser
     parser = PydanticOutputParser(pydantic_object=BookingRequest)
     # apply my predefined prompt template
@@ -46,37 +47,83 @@ def parse_request(state: AgentState) -> AgentState:
         
     return state
 
+# NODE [02]. Ask Clarification Node
 def ask_clarification(state: AgentState) -> AgentState:
-    print("---NODE: ASK CLARIFICATION---")
+    logger.info(" ------------------ NODE: ASK CLARIFICATION ------------------ ")
     state["clarification_question"] = state["clarification_question"]
     state["messages"].append(SystemMessage(content=state["clarification_question"]))    
     return state
 
-
+# NODE [03]. Handle Error Node
 def handle_error(state: AgentState) -> AgentState:
+    logger.info(" ------------------ NODE: HANDLE ERROR ------------------ ")
     state["llm_response"] = state.get("error_message", "An unknown error occurred.")
     state["messages"].append(SystemMessage(content=state["llm_response"]))
     state["clarification_needed"] = False
     return END
-   
-def book_room(state: AgentState) -> AgentState:
-    # In a real workflow, you'd call your booking API here
-    state["final_response_to_user"] = "Booking room..."
+
+def find_matching_rooms(state: AgentState) -> AgentState:
+    logger.info(" ------------------ NODE: GET MATCHING ROOMS ------------------ ")
+    capacity = state["parsed_request"]["capacity"]
+    equipments = state["parsed_request"]["equipments"]
+    matching_rooms = room_services.find_matching_rooms(capacity, equipments)
+    state["matching_rooms"] = matching_rooms if len(matching_rooms) > 0 else None
+    return state
+
+def find_booking_options(state: AgentState) -> bool:
+    logger.info(" ------------------ NODE: GET AVAILABLE ROOMS ------------------ ")
+    
+    available_rooms = []
+    for room in state["matching_rooms"]:
+        is_conflict = booking_services.is_time_conflict(room['id'],
+                                                        state["parsed_request"]["start_time"],
+                                                        state["parsed_request"]["duration_hours"])
+        if is_conflict: continue
+        else: available_rooms.append(room)
+    
+    state["available_room_options"] = available_rooms if len(available_rooms)>0 else None
+    
+    return state
+
+def select_room(state: AgentState) -> AgentState:
+    logger.info(" ------------------ NODE: SELECT ROOM ------------------ ")
+    state["selected_room"] = state["available_room_options"][0]
+    return state
+
+def search_alternative_rooms(state: AgentState) -> AgentState:
+    logger.info(" ------------------ NODE: SEARCH ALTERNATIVE ROOMS ------------------ ")
+    return state
+
+
+def confirm_booking_node(state: AgentState) -> AgentState:
+    logger.info(" ------------------ NODE: CONFIRM BOOKING ------------------ ")
+    state["user_booking_confirmation"] = "yes"
+    state["llm_response"] = "Booking Confirmed for room {}".format(state["selected_room"])
     return state
 
 ########################################################################
 # CONDITIONS: 
 ########################################################################
-
-# Check if request is valid and clear
+# CONDITION [1]. Check Valid Request Condition
 def is_clear_request(state: AgentState) -> str:
-    print("---CONDITION: Check Valid and Clear Request---")
+    logger.info(" --->>>> CONDITION: Check Valid and Clear Request <<<<--- ")
     if state.get("error_message"):
-        print("----> Error detected")
+        logger.info("----> Error detected")
         return "handle_error"
     elif state.get("clarification_needed"):
-        print("----> Clarification needed")
+        logger.info("----> Clarification needed")
         return "ask_clarification"
     else:
-        print("----> Ready to book room")
-        return "book_room"
+        logger.info("----> Ready to book room")
+        return "find_matching_rooms"
+
+# CONDITION [2]. Check if user confirm booking
+def is_confirmed(state: AgentState) -> bool:
+    logger.info(" --->>>> CONDITION: Check if user confirm booking <<<<--- ")
+    if state["user_booking_confirmation"].lower() in ["yes", "y"]:
+        return True
+    else:
+        state["clarification_needed"] = True
+        state["clarification_question"] = "Booking Not Confimed. Do you want to book another room?"
+        return False
+

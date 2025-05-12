@@ -18,9 +18,9 @@ def save_bookings(bookings: List[Booking]):
 
 def is_time_conflict(room_id: int, 
                      start_time: str, 
-                     duration_hours: int, 
-                     existing_bookings: List[Booking]) -> bool:
+                     duration_hours: int) -> bool:
     
+    existing_bookings = load_bookings()
     start_time = datetime.fromisoformat(start_time)
     end_time = start_time + timedelta(hours=duration_hours)
 
