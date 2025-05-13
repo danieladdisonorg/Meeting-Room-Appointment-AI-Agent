@@ -11,6 +11,8 @@ from booking_agent.nodes import (
     is_clear_request, is_confirmed
 )
 
+from langsmith import LangSmithCallbackHandler
+
 # Define constants for node names
 PARSE_REQUEST = "parse_request_node"
 ASK_CLARIFICATION = "ask_clarification_node"
@@ -21,6 +23,7 @@ SEARCH_ALTERNATIVE_ROOMS = "search_alternative_rooms_node"
 CHOOSE_ALTERNATIVE_ROOMS = "choose_alternative_rooms_node"
 CONFIRM_BOOKING = "confirm_booking_node"
 INFORM_USER = "inform_user_node"
+CHECK_TIME_CONFLICT = "check_time_conflict_node"
 
 
 def create_workflow():
@@ -29,8 +32,11 @@ def create_workflow():
     # SET WORKFLOW
     #########################################################################
     workflow = StateGraph(AgentState)
-    workflow.set_state(AgentState.INITIAL)
-    workflow.set_transition_logger(lambda from_node, to_node: print(f"Transition: {from_node} -> {to_node}"))
+
+    callback_handler = LangSmithCallbackHandler()
+    workflow.set_transition_logger(callback_handler.log_transition)
+    # workflow.set_state(AgentState.INITIAL)
+    # workflow.set_transition_logger(lambda from_node, to_node: print(f"Transition: {from_node} -> {to_node}"))
 
     #########################################################################
     # SET NODES
