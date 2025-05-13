@@ -6,7 +6,7 @@ from flask import Flask, request, render_template, session, redirect, url_for
 from booking_agent.workflow import create_workflow
 from helper import dict_to_message, message_to_dict
 from booking_agent.prompt_config import DEFAULT_AGENT_STATE
-from config import FlaskConfig
+from config import FlaskConfig, logger
 
 app = Flask(__name__)
 app.config.from_object(FlaskConfig)
@@ -44,6 +44,7 @@ def booking():
     session['agent_state']['messages'] = [dict_to_message(msg) for msg in session['agent_state']['messages']]
 
     ######################## Process through workflow ########################
+    logger.info(" >>>>> Processing through workflow, user input: %s", session['agent_state'])
     response = workflow.invoke(session['agent_state'])
     # 1. save LLM response to agent state in the session and 
     # Extract only the latest assistant message
@@ -53,9 +54,8 @@ def booking():
             assistant_message = msg.content
             break    
     # 2. Convert messages to serializable format (JSON) for Flask session
-    session['agent_state']['messages'] = [message_to_dict(msg) for msg in session['agent_state']['messages']]
+    session['agent_state']['messages'] = [
+        message_to_dict(msg) for msg in session['agent_state']['messages']
+        ]
     session.modified = True
     return render_template('index.html', response=assistant_message)
-
-# if __name__ == '__main__':
-#     app.run(debug=app.config['DEBUG'])

@@ -1,0 +1,65 @@
+{
+    "start_date": [
+        "What date should I book the room for?",
+        "Which date are you looking to reserve?",
+        "Could you tell me the desired date for your booking?",
+        "For what date would you like the room to be scheduled?",
+        "What is the specific date you have in mind for the reservation?"
+    ],
+    "start_time": [
+        "What time should I book the room for?",
+        "At what time would you like the booking to begin?",
+        "Could you specify the starting time for your reservation?",
+        "What is the desired start time for the room booking?",
+        "Please let me know the time you'd like to start your meeting."
+    ],
+    "duration_hours": [
+        "How many hours will the meeting last?",
+        "What is the expected duration of your booking in hours?",
+        "Could you please specify how many hours you'll need the room for?",
+        "For how many hours should I reserve the room?",
+        "What is the anticipated length of your meeting in terms of hours?"
+    ],
+    "capacity": [
+        "What is the capacity of the room?",
+        "How many people do you expect to be attending?",
+        "What is the required occupancy for the room?",
+        "How many individuals will the room need to accommodate?",
+        "Could you please let me know the number of attendees?"
+    ],
+    "equipments": [
+        "What equipment do you need in the room?",
+        "Are there any specific equipment requirements for the room?",
+        "What kind of equipment will you need for your meeting?",
+        "Do you require any particular items such as projectors or whiteboards?",
+        "Please specify any necessary equipment for the room booking."
+    ],
+    "user_name_for_booking": [
+        "Could you please provide your name for the booking?",
+        "What name should I use for the reservation?",
+        "May I have the name for this booking, please?",
+        "Under what name should I make the reservation?",
+        "Could you please tell me the name of the person making the booking?"
+    ]
+    // "end_time": [
+    //     "What time will the meeting end?",
+    //     "What is the expected end time for your booking?",
+    //     "Could you please specify the time your meeting will conclude?",
+    //     "At what time should the room reservation end?",
+    //     "What is the anticipated finish time for your meeting?"
+    // ],
+    // "room_type": [
+    //     "What type of room are you looking for?",
+    //     "Is there a specific kind of room you need (e.g., conference room, meeting room)?",
+    //     "What kind of room would be most suitable for your needs?",
+    //     "Are you looking for a particular style or setup of room?",
+    //     "Do you have a preference for the type of room?"
+    // ],
+    // "location": [
+    //     "In which location are you looking to book a room?",
+    //     "Do you have a specific location in mind?",
+    //     "Where would you like the room to be located?",
+    //     "Are there any particular location preferences you have?",
+    //     "Could you please specify the desired location for the room booking?"
+    // ]
+}

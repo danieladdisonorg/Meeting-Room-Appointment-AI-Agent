@@ -37,6 +37,7 @@ LANGCHAIN_API_KEY = os.environ["LANGCHAIN_API_KEY"]
 # File Paths
 ROOMS_FILE = PROJECT_DIR / "data/rooms.json"
 BOOKINGS_FILE = PROJECT_DIR / "data/bookings.json"
+MSG_JSON_FILE = PROJECT_DIR / "data/clarification_messages.json"
 LOGS_DIR = PROJECT_DIR / "logs"
 
 
