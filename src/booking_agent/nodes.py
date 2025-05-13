@@ -6,8 +6,17 @@ from datetime import datetime
 from langgraph.graph import END
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.messages import HumanMessage, SystemMessage
+from langgraph.tools import tool
 
-from mock_apis import booking_services, room_services
+from mock_apis.booking_services import (
+    save_bookings_tool, check_time_conflict_tool
+)
+
+from mock_apis.room_services import (
+    find_matching_rooms_tool, find_rooms_by_equipments_tool, 
+    find_similar_rooms_tool, find_matching_rooms_tool
+)
+
 from booking_agent.schemas import AgentState, BookingRequest, Room
 from helper import (
     get_llm, apply_prompt_template, 
@@ -66,6 +75,9 @@ def ask_clarification(state: AgentState) -> AgentState:
 
 # NODE [03]. Handle Error Node
 def handle_error(state: AgentState) -> AgentState:
+    """
+    Handle errors and provide feedback to the user.
+    """
     logger.info(" ------------------ NODE: HANDLE ERROR ------------------ ")
 
     if state["matching_rooms"] is None:
@@ -80,7 +92,7 @@ def handle_error(state: AgentState) -> AgentState:
     state["llm_response"] = state.get("error_message", "An unknown error occurred.")
     state["messages"].append(SystemMessage(content=state["llm_response"]))
     state["clarification_needed"] = False
-    return END
+    return state
 
 def find_matching_rooms(state: AgentState) -> AgentState:
     """
@@ -90,8 +102,8 @@ def find_matching_rooms(state: AgentState) -> AgentState:
     
     capacity = state["parsed_request"]["capacity"]
     equipments = state["parsed_request"]["equipments"]
-    matching_rooms = room_services.find_matching_rooms(capacity, equipments)
-    
+    matching_rooms = find_matching_rooms_tool(capacity, equipments)
+
     state["matching_rooms"] = matching_rooms # if len(matching_rooms) > 0 else None
     logger.info(" >>>>>>> MATCHING ROOMS: %s", state.get("matching_rooms", "NO MATCHING ROOMS"))
     
@@ -106,16 +118,17 @@ def find_booking_options(state: AgentState) -> bool:
     available_rooms = []
     unavailable_rooms = []
     for room in state["matching_rooms"]:
-        is_conflict = booking_services.is_time_conflict(
-                        room['id'],
-                        state["parsed_request"]["start_time"],
-                        state["parsed_request"]["duration_hours"]
-                )
+        is_conflict = check_time_conflict_tool.run(
+            room_id=room.id,
+            start_time=state["parsed_request"]["start_time"],
+            duration_hours=state["parsed_request"]["duration_hours"]
+        )
         if not is_conflict: available_rooms.append(room)
         else: unavailable_rooms.append(room)
 
     state["available_rooms"] = available_rooms
     state["un_available_rooms"] = unavailable_rooms
+
     logger.info(" >>>>>>> UNAVAILABLE ROOMS:", state.get("un_available_rooms", "NO UNAVAILABLE ROOMS"))
     logger.info(" >>>>>>> AVAILABLE ROOMS:", state.get("available_rooms", "NO FREE AVAILABLE ROOMS"))
     # state["llm_response"] = format_booking_rooms_msg(state["available_rooms"])
@@ -151,9 +164,11 @@ def suggest_alternative_times(state: AgentState) -> AgentState:
     
     alternative_times = {}
     for room in state["matching_rooms"]:
-        if room["type"] == state["selected_room"]["type"]:
-            times = booking_services.get_available_times(room["id"])
-            alternative_times[room["id"]] =times
+        if room.type == state["selected_room"]["type"]:
+            times = check_time_conflict_tool(room.id, 
+                                             state["parsed_request"]["start_time"], 
+                                             state["parsed_request"]["duration_hours"])
+            alternative_times[room.id] = times
 
     state["llm_response"] = format_available_times_msg(alternative_times)
     state["messages"].append(SystemMessage(content=state["llm_response"]))
@@ -168,10 +183,7 @@ def confirm_booking(state: AgentState) -> AgentState:
 
 def find_booking_options(state: AgentState) -> AgentState:
     logger.info(" ------------------ NODE: GET AVAILABLE ROOMS ------------------ ")
-    state = find_booking_options(state)
-    state = select_room(state)
-    state = confirm_booking_node(state)
-    return state
+    pass
 
 def inform_user(state: AgentState) -> AgentState:
     logger.info(" ------------------ NODE: INFORM USER ------------------ ")

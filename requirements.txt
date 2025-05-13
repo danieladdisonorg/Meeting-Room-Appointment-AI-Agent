@@ -1,2 +1,13 @@
-flask==3.1.0
+langchain==0.3.10
+langgraph==0.2.45
+langserve==0.3.0
+langsmith==0.3.42
+langchain-core==0.3.59
+langchain-groq==0.2.1
+
 uuid==1.30
+flask==3.1.0
+
+pydantic==2.11.4
+pydantic-core==2.33.2
+python-dotenv==1.1.0

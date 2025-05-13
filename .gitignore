@@ -6,5 +6,4 @@ logs/
 .env
 
 
-Meeting_Room_Booking_Manus.ipynb
-test.ipynb
+environment.yml
