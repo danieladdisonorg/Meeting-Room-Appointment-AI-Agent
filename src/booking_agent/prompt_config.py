@@ -35,8 +35,8 @@ REQUEST_TEMPLATE = "\n".join([
         "     → Set all missing fields by null.",
         "     → Set `clarification_needed: true`.",
         "     → Set `clarification_question`: Respond politely to the greeting such as 'Hi, how can I help you?'."
-        " - If greeting + booking details: reply with friendly tone AND extract fields."
 
+        " - If greeting + some booking details: reply with friendly tone AND extract fields."
         "- Always respond ONLY with a JSON object matching this schema: {parsing_schema}.",
         "- Do NOT include any extra explanation or text outside the JSON.",
         "- For any Missing Fields (e.g, 'equipments') you MUST:",
@@ -53,7 +53,8 @@ REQUEST_TEMPLATE = "\n".join([
         "   • Non-booking inquiries (e.g., 'What's the weather?')",
         "   • Historical data queries",
         "   • Multi-room bookings",
-        
+        "- Greet only once at the conversion, if the user say his/her name, use it in the conversion"
+
     "### Example Outputs:",
         "- Complete info:\n{successful_example}",
         "- Needs clarification:\n{missing_example}\n",

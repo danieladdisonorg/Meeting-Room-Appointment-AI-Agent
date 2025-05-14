@@ -115,11 +115,9 @@ def get_missing_fields(parsed_request: dict) -> list:
     return [
         field for field in REQUIRED_FIELDS
         if not parsed_request.get(field)
-        or parsed_request[field] is None
-        or parsed_request[field] == ""
+        # or (parsed_request[field] == "nothing")
+        or (field == "duration_hours" and parsed_request[field] <= 0)
     ]
-        # or (field == "equipments" and not parsed_request[field])
-        # or (field == "duration_hours" and parsed_request[field] <= 0)
 def load_clarification_msgs(filepath:str = MSG_JSON_FILE) -> Dict:
     """
     Load clarification messages from a JSON file.

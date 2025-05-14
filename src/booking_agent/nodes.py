@@ -114,7 +114,7 @@ def find_matching_rooms(state: AgentState, llm) -> AgentState:
         logger.info("\n>>>>> CONVERSION CONTEXT: %s", conversation_context)
         # Invoke chain 
         matching_rooms_conclusion = chain.invoke({"rooms": matching_rooms}).content
-        logger.info(" >>>>>>> MATCHING ROOMS: %s", matching_rooms_conclusion.text)
+        logger.info(" >>>>>>> MATCHING ROOMS: %s", matching_rooms_conclusion)
 
         state["messages"].append(SystemMessage(content=matching_rooms_conclusion))
         logger.info(" >>>>>>> MATCHING ROOMS: %s", state["messages"])

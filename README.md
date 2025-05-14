@@ -18,7 +18,7 @@ A LangGraph-based AI agent to help users find and reserve meeting rooms. The sys
 4. **Calendar Booking System:** Mock API for availability and bookings.
 
 <p align="center">
-  <img src="docs/system_architecture.svg" alt="System Architecture" width="80%"/>
+  <img src="docs\system_architecture.svg" alt="System Architecture" width="80%"/>
 </p>
 
 ## Setup
@@ -100,4 +100,4 @@ The system uses JSON files for prototyping:
 
 ## Workflow Diagram
 
-![Agent Flowchart](docs/flowchart.svg)
+![Agent Flowchart](docs\flowchart.svg)
