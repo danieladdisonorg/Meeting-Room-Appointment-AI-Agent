@@ -1,12 +1,21 @@
 This LangGraph-based AI agent to help users find and reserve meeting rooms. The system will be built using the `LangGraph` framework to create a robust and flexible solution.
+
+A LangGraph-based AI agent to help users find and reserve meeting rooms. The system uses Groq API (with support for other LLMs like Ollama) and implements a complete booking workflow with room availability checks.
+
+## Features
+
+- Natural language processing for meeting room requests
+- Room availability checking and booking
+- Flexible workflow with user clarification loops
+- Simple web interface for interaction
+- JSON-based database for prototyping
+
 ## Components
 
 1. **User Interface (UI):** For interacting with the user. I used simple html ans css template for prototyping.
 2. **AI Agent :** Use `LangGraph` with LLM for booking rooms using main `Groq API` and support other LLMs like Ollama.
 3. **Room and Booking Database:** Simple Json files as a dummy NoSQL data.
 4. **Calendar Booking System:** Mock API for availability and bookings.
-<!-- 5. **Observability:** Logs traces for observability using `LangSmith`. -->
-## Architecture Diagram (Conceptual):
 
 <p align="center">
   <img src="system_architecture.svg" alt="System Architecture" width="80%"/>
@@ -197,27 +206,26 @@ The system prompt defines the rules and instructions governing the Meeting Room 
 
 ## Directory Structure
 
-```tree
-room_booking_agent/
-│   app.py
-│   config.py
-│   helper.py
-│   
-├───booking_agent
-│       conditions.py
-│       nodes.py
-│       prompt_config.py
-│       schemas.py
-│       workflow.py
-│
-├───mock_apis
-│       booking_services.py
-│       room_services.py
-│
-├───static
-│       style.css
-│
-└───templates
-        index.html
 ```
-
+room_booking_agent/
+│   app.py                - Main Flask application
+│   config.py             - Configuration settings
+│   helper.py             - Utility functions
+│   
+├───booking_agent         - Core agent components
+│       conditions.py      - Transition conditions
+│       nodes.py           - Nodes defination
+│       prompt_config.py   - System prompts template text
+│       schemas.py         - Pydantic models
+│       workflow.py        - LangGraph workflow definition
+│
+├───mock_apis             - Mock services
+│       booking_services.py - Booking API simulation
+│       room_services.py   - Room data service
+│
+├───static                 - Web assets
+│       style.css       
+│
+└───templates             - HTML templates
+        index.html        - Main interface
+```
