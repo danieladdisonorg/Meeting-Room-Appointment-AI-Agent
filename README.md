@@ -3,7 +3,7 @@
 A LangGraph-based AI agent to help users find and reserve meeting rooms. The system uses Groq API (with support for other LLMs like Ollama) and implements a complete booking workflow with room availability checks.
 
 <p align="center">
-  <img src="docs\chatbot.jpg" alt="chatbot" width="80%"/>
+  <img src="docs\chatbot.jpg" alt="chatbot" width="40%"/>
 </p>
 
 ## Features
