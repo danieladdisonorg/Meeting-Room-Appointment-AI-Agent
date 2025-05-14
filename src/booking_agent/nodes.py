@@ -14,12 +14,11 @@ from mock_apis.booking_services import *
 from mock_apis.room_services import *
 from booking_agent.schemas import AgentState, BookingRequest
 
-
 ##==============================================================================
 # NODE FUNCTIONS
 ##==============================================================================
 # NODE [01]. Parsing user requests Node
-def parse_request(state: AgentState) -> AgentState:
+def parse_request(state: AgentState, llm) -> AgentState:
     logger.info(" ------------------ NODE: PARSE REQUEST ------------------ ")
 
     ######################## (1.) Initialization ######################
@@ -30,32 +29,36 @@ def parse_request(state: AgentState) -> AgentState:
     # Initialize parser used for user request parsing
     parser = PydanticOutputParser(pydantic_object=BookingRequest)
     # Apply template to the inputrequest to inject the predefined template prompt
-    prompt_template = apply_prompt_template(parser)
+    prompt_template = apply_request_prompt(parser)
     # Initialize LLM
-    llm = initialize_llm(name="groq")
-    # Create chain
-    chain = prompt_template | llm | parser
+    try:
+        # llm = initialize_llm(name="groq")
+        # Create chain
+        chain = prompt_template | llm | parser
+        ############## (2.) Update conversation history ##################
+        # logger.info(" >>>>> USER INPUT : %s", state['user_input'])
+        state["messages"].append(HumanMessage(content=state['user_input']))
+        # Build full request context from conversation history ####
+        conversation_context = "\n".join(
+            f"{'USER' if isinstance(msg, HumanMessage) else 'AGENT'}: {msg.content}"
+            for msg in state["messages"]
+        )
+        logger.info("\n>>>>> CONVERSION CONTEXT: %s", conversation_context)
 
-    ############## (2.) Update conversation history ##################
-    # logger.info(" >>>>> USER INPUT : %s", state['user_input'])
-    state["messages"].append(HumanMessage(content=state['user_input']))
-    # Build full request context from conversation history ####
-    conversation_context = "\n".join(
-        f"{'USER' if isinstance(msg, HumanMessage) else 'AGENT'}: {msg.content}"
-        for msg in state["messages"]
-    )
-    logger.info("\n>>>>> CONVERSION CONTEXT: %s", conversation_context)
-
-    ######################## (3.) Invoke chain ########################
-    parsed_data = chain.invoke({"user_request": conversation_context,
-                                "current_date": current_date,
-                                "current_time": current_time})
+        ######################## (3.) Invoke chain ########################
+        parsed_data = chain.invoke({"user_request": conversation_context,
+                                    "current_date": current_date,
+                                    "current_time": current_time})
+        
+        logger.info("\n >>>>>>> PARSED REQUEST: %s", parsed_data.model_dump())
+        state.update({
+            "parsed_request": parsed_data.model_dump(),
+            "user_name_for_booking": parsed_data.user_name,
+            })
+    except Exception as e:
+        state["error_message"] = f"Failed to parse request: {str(e)}"   
+        return state
     
-    logger.info("\n >>>>>>> PARSED REQUEST: %s", parsed_data.model_dump())
-    state.update({
-        "parsed_request": parsed_data.model_dump(),
-        "user_name_for_booking": parsed_data.user_name,
-        })
     return state
 
 # NODE [02]. Ask Clarification Node
@@ -82,145 +85,88 @@ def ask_clarification(state: AgentState) -> AgentState:
 
     return state
 
-# NODE [03]. Handle Error Node
-def handle_error(state: AgentState) -> AgentState:
+# NODE [03]. Searching for rooms that matches the capacity and equipment
+def find_matching_rooms(state: AgentState, llm) -> AgentState:
     """
-    Handle errors and provide appropriate feedback to the user.
+    Find all rooms that match the user's requirements (capacity, equipment).
     """
-    logger.info(" ------------------ NODE: HANDLE ERROR ------------------ ")
-    
-    # Default error message
-    error_msg = state.get("error_message", "An unknown error occurred.")
-    
-    # Customize error message based on state
-    if not state.get("matching_rooms", []):
-        error_msg = (
-            "I couldn't find any rooms matching your requirements. "
-            "You might want to try:\n"
-            "- Reducing the required capacity\n"
-            "- Adjusting the equipment requirements\n"
-            "- Checking different dates or times"
-        )
-    elif not state.get("available_rooms", []):
-        error_msg = (
-            "The matching rooms are not available at your requested time. "
-            "Would you like to:\n"
-            "- See alternative time slots\n"
-            "- Check similar rooms\n"
-            "- Try a different date or time"
-        )
-    elif state.get("booking_result") is False:
-        error_msg = (
-            "I couldn't complete the booking. This might be because:\n"
-            "- The room was just booked by someone else\n"
-            "- There was a system error\n"
-            "Would you like to try booking a different room?"
-        )
-    
-    logger.info(" >>>>>>> ERROR MESSAGE: %s", error_msg)
-    state["llm_response"] = error_msg
-    state["messages"].append(SystemMessage(content=state["llm_response"]))
-    
-    # Set flags for next steps
-    state["clarification_needed"] = True
-    state["clarification_question"] = "Would you like to try a different search?"
-    
-    return state
-
-# def find_matching_rooms(state: AgentState) -> AgentState:
-#     """
-#     Find all rooms that match the user's requirements (capacity, equipment).
-#     """
-#     logger.info(" ------------------ NODE: GET MATCHING ROOMS ------------------ ")
+    logger.info(" ------------------ NODE: GET MATCHING ROOMS ------------------ ")
  
-#     try:
-#         capacity = state["parsed_request"]["capacity"]
-#         equipments = state["parsed_request"].get("equipments", [])
+    try:
+        existing_rooms = load_rooms()
+        capacity = state["parsed_request"]["capacity"]
+        equipments = state["parsed_request"].get("equipments", [])
         
-#         matching_rooms = find_matching_rooms_tool.run(
-#             capacity=capacity,
-#             equipments=equipments
-#         )
+        matching_rooms = find_matching_rooms_tool(
+            existing_rooms,
+            capacity=capacity,
+            equipments=equipments
+        )
         
-#         state["matching_rooms"] = matching_rooms
-#         logger.info(" >>>>>>> MATCHING ROOMS: %s", 
-#                     "NO MATCHING ROOMS" if len(matching_rooms) == 0 else state["matching_rooms"])
-#         return state
-        
-#     except Exception as e:
-#         logger.error(f"Error finding matching rooms: {str(e)}")
-#         state["error_message"] = f"Failed to find matching rooms: {str(e)}"
-#         state["matching_rooms"] = []
-#         return state
+        state["matching_rooms"] = matching_rooms
+        # Ask LLM to make this in summerized response
+        conversation_context = "\n".join(
+            f"{'USER' if isinstance(msg, HumanMessage) else 'AGENT'}: {msg.content}"
+            for msg in state["messages"]
+        )
+        rooms_prompt = apply_rooms_prompt(matching_rooms)
+        chain = rooms_prompt | llm 
+        logger.info("\n>>>>> CONVERSION CONTEXT: %s", conversation_context)
+        # Invoke chain 
+        matching_rooms_conclusion = chain.invoke({
+                                        "conversation_context": conversation_context,
+                                        "rooms": matching_rooms
+                                    }).content
+        logger.info(" >>>>>>> MATCHING ROOMS: %s", matching_rooms_conclusion.text)
 
-# def find_booking_options(state: AgentState) -> AgentState:
-#     """
-#     For each matching room, check if it's available at the requested time.
-#     """
-#     logger.info(" ------------------ NODE: GET AVAILABLE ROOMS ------------------ ")
+        state["messages"].append(SystemMessage(content=matching_rooms_conclusion.text))
+        logger.info(" >>>>>>> MATCHING ROOMS: %s", state["messages"])
+        return state
+
+    except Exception as e:
+        logger.error(f"Error finding matching rooms: {str(e)}")
+        state["matching_rooms"] = []
+        state["error_message"] = f"Failed to find matching rooms: {str(e)}"
+        return state
+
+# NODE [04]. Define the availability of the matching rooms
+def find_booking_options(state: AgentState) -> AgentState:
+    """
+    For each matching room, check if it's available at the requested time.
+    """
+    logger.info(" ------------------ NODE: GET AVAILABLE ROOMS ------------------ ")
     
-#     available_rooms = []
-#     unavailable_rooms = []
+    available_rooms = []
+    unavailable_rooms = []
     
-#     try:
-#         for room in state["matching_rooms"]:
-#             is_conflict = check_time_conflict_tool.run(
-#                 room_id=room.id,
-#                 start_time=state["parsed_request"]["start_time"],
-#                 duration_hours=state["parsed_request"]["duration_hours"]
-#             )
-            
-#             if not is_conflict: available_rooms.append(room)
-#             else: unavailable_rooms.append(room)
+    try:
+        existing_bookings = load_bookings()
+        for room in state["matching_rooms"]:
+            # Check if room is available in the given time slot
+            if check_time_conflict_tool(
+                existing_bookings=existing_bookings, room_id=room.id,
+                start_time=state["parsed_request"]["start_time"],
+                duration_hours=state["parsed_request"]["duration_hours"]
+            ):
+                unavailable_rooms.append(room)
+            else:
+                available_rooms.append(room)
 
-#         logger.info(" >>>>>>> AVAILABLE ROOMS: %s",
-#                    "NO AVAILABLE ROOMS" if not available_rooms else available_rooms)
+        logger.info(" >>>>>>> AVAILABLE ROOMS: %s",
+                   "NO AVAILABLE ROOMS" if not available_rooms else available_rooms)
         
-#         state["available_rooms"] = available_rooms
-#         state["unavailable_rooms"] = unavailable_rooms
+        state["available_rooms"] = available_rooms
+        state["unavailable_rooms"] = unavailable_rooms
         
-#     except Exception as e:
-#         logger.error(f"Error checking room availability: {str(e)}")
-#         state["error_message"] = f"Failed to check room availability: {str(e)}"
-#         state["available_rooms"] = []
-#         state["unavailable_rooms"] = []
+    except Exception as e:
+        logger.error(f"Error checking room availability: {str(e)}")
+        state["error_message"] = f"Failed to check room availability: {str(e)}"
+        state["available_rooms"] = []
+        state["unavailable_rooms"] = []
 
-#     logger.info(" >>>>>>> UNAVAILABLE ROOMS:", state.get("un_available_rooms", "NO UNAVAILABLE ROOMS"))
-#     logger.info(" >>>>>>> AVAILABLE ROOMS:", state.get("available_rooms", "NO FREE AVAILABLE ROOMS"))
-#     # state["llm_response"] = format_booking_rooms_msg(state["available_rooms"])
-
-#     return state
-
-# def find_available_times(state: AgentState) -> AgentState:
-#     """
-#     Find available time slots for matching rooms.
-#     """
-#     logger.info(" ------------------ NODE: FIND AVAILABLE TIMES ------------------ ")
-    
-#     try:
-#         available_times = {}
-#         for room in state.get("matching_rooms", []):
-#             times = check_time_conflict_tool.run(
-#                 room_id=room.id,
-#                 start_time=state["parsed_request"]["start_time"],
-#                 duration_hours=state["parsed_request"]["duration_hours"]
-#             )
-#             if times:
-#                 available_times[room.name] = times
-                
-#         if available_times:
-#             state["llm_response"] = format_available_times_msg(available_times)
-#         else:
-#             state["llm_response"] = "I couldn't find any available time slots for the matching rooms."
-#             state["error_message"] = "No available time slots found"
-            
-#     except Exception as e:
-#         logger.error(f"Error finding available times: {str(e)}")
-#         state["error_message"] = f"Failed to find available times: {str(e)}"
-#         state["llm_response"] = "Sorry, I encountered an error while searching for available times."
-    
-#     state["messages"].append(SystemMessage(content=state["llm_response"]))
-#     return state
+    logger.info(" >>>>>>> UNAVAILABLE ROOMS:", state.get("un_available_rooms", "NO UNAVAILABLE ROOMS"))
+    logger.info(" >>>>>>> AVAILABLE ROOMS:", state.get("available_rooms", "NO FREE AVAILABLE ROOMS"))
+    return state
 
 # def select_room(state: AgentState) -> AgentState:
 #     """
@@ -264,7 +210,7 @@ def handle_error(state: AgentState) -> AgentState:
             
 #         alternative_times = {}
 #         for room in state.get("matching_rooms", []):
-#             times = check_time_conflict_tool.run(
+#             times = check_time_conflict_tool(
 #                 room_id=room.id,
 #                 start_time=state["parsed_request"]["start_time"],
 #                 duration_hours=state["parsed_request"]["duration_hours"]
@@ -285,6 +231,7 @@ def handle_error(state: AgentState) -> AgentState:
     
 #     state["messages"].append(SystemMessage(content=state["llm_response"]))
 #     return state
+
 # def confirm_booking(state: AgentState) -> AgentState:
 #     """
 #     Complete the booking process and save the booking record.
@@ -302,7 +249,7 @@ def handle_error(state: AgentState) -> AgentState:
 #                    timedelta(hours=booking_data["duration_hours"])
         
 #         # Create the booking using the tool
-#         booking_result = book_room_tool.run(
+#         booking_result = book_room_tool(
 #             room_id=room.id,
 #             start_time=booking_data["start_time"],
 #             end_time=end_time.isoformat(),
@@ -336,7 +283,7 @@ def handle_error(state: AgentState) -> AgentState:
 #         equipments = state["parsed_request"].get("equipments", [])
         
 #         # Find similar rooms using the similarity tool
-#         alternative_rooms = find_similar_rooms_tool.run(
+#         alternative_rooms = find_similar_rooms_tool(
 #             capacity=capacity,
 #             equipments=equipments
 #         )
@@ -404,3 +351,27 @@ def handle_error(state: AgentState) -> AgentState:
     
 #     state["messages"].append(SystemMessage(content=state["llm_response"]))
 #     return state
+
+# NODE [03]. Handle Error Node
+def handle_error(state: AgentState) -> AgentState:
+    """
+    Handle errors and provide appropriate feedback to the user.
+    """
+    logger.info(" ------------------ NODE: HANDLE ERROR ------------------ ")
+    msgs = load_clarification_msgs()
+
+    # Customize error message based on state
+    if not state.get("matching_rooms", []):
+        error_msg = msgs['no_matching_rooms']
+    elif not state.get("available_rooms", []):
+        error_msg = msgs['no_available_times']
+    elif state.get("booking_result") is False:
+        error_msg = msgs['booking_error']
+    else:
+        error_msg = state.get("error_message", "Sorry! we are out of service now.")
+
+    logger.info(" >>>>>>> ERROR MESSAGE: %s", error_msg)
+    state["messages"].append(SystemMessage(content=error_msg))
+    state["error_message"] = error_msg
+
+    return state

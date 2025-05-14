@@ -20,6 +20,7 @@ PROJECT_NAME = os.environ["PROJECT_NAME"]
 FLASK_SECRET_KEY = os.environ["FLASK_SECRET_KEY"]
 
 # LLM Configuration
+TEMPERATURE = float(os.environ["TEMPERATURE"])
 GROQ_API_KEY = os.environ["GROQ_API_KEY"]
 GROQ_MODEL_NAME = os.environ["GROQ_MODEL_NAME"]
 
@@ -50,8 +51,8 @@ DELAY = timedelta(hours=0.5)
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Create log file with current date
-current_date = datetime.now().strftime("%Y-%m-%d")
-log_file_path = LOGS_DIR / f"log_{current_date}.log"
+current_time = datetime.now().strftime('%Y-%m-%d_%H')
+log_file_path = LOGS_DIR / f"{current_time}.log"
 
 # Logging Configuration
 logging.basicConfig(

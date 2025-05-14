@@ -19,17 +19,16 @@ def is_clear_request(state: AgentState) -> str:
     logger.info(" ------------------ CONDITION: Check Valid and Clear Request ------------------ ")
     missed_fields = get_missing_fields(state["parsed_request"])
 
-    ####### Set clarification question if missing fields ###########
-    if len(missed_fields) > 0 or state.get("clarification_needed", True) or state.get("clarification_question", False):
+    if len(missed_fields) > 0 or state.get("clarification_needed", True): # or state.get("clarification_question", False):
         logger.error(f"Missing mandatory fields in parsed_data: {missed_fields}")
         return "ask_clarification"
-    
+
     elif state.get("error_message"):
-        # logger.info(" >>>>>>> Error detected")
         return "handle_error"
+
     else:
-        # logger.info(" >>>>>>> Ready to book room")
         return "find_matching_rooms"
+
 
 # CONDITION [2]. Check if user confirm booking
 # def is_confirmed(state: AgentState) -> bool:

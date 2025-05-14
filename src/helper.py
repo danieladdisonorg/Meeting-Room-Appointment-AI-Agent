@@ -21,50 +21,73 @@ REQUIRED_FIELDS = [
     "equipments", "user_name", "capacity"
 ]
 
-def initialize_llm(name: str):
+def initialize_llm(name: str, temp: float=0.0):
     """
     Initialize the LLM with tools. we can choose from different types of LLMs.
     """
     if name.lower() == "ollama":
         llm = ChatOllama(model_name=OLLAMA_MODEL_NAME,
                           ollama_api_key=OLLAMA_API_KEY,
-                          temperature=0.0)
+                          temperature=temp)
+        logger.info(f">>>> Load Ollama: {OLLAMA_MODEL_NAME} model correctly.")
     
     elif name.lower() == "gemini":
         llm = ChatGoogleGenerativeAI(model=GEMINI_MODEL_NAME,  # Explicitly pass the model
                                       google_api_key=GEMINI_API_KEY,
-                                      temperature=0.0)
+                                      temperature=temp)
+        logger.info(f">>>> Load Gemini: {GEMINI_MODEL_NAME} model correctly.")
+
     elif name.lower() == "groq":
         llm = ChatGroq(model_name=GROQ_MODEL_NAME,
                         groq_api_key=GROQ_API_KEY,
-                        temperature=0.0)
+                        temperature=temp)
+        logger.info(f">>>> Load Groq: {GROQ_MODEL_NAME} model correctly.")
+
     else:
         raise ValueError(f"Unsupported LLM: {name}")
     
-    llm.bind_tools([
-        save_bookings_tool,
-        check_time_conflict_tool,
-        book_room_tool,
-        find_matching_rooms_tool,
-        find_similar_rooms_tool,
-        find_rooms_by_equipments_tool
-    ])
+    # llm.bind_tools([
+    #     save_bookings_tool,
+    #     check_time_conflict_tool,
+    #     # book_room_tool,
+    #     find_matching_rooms_tool,
+    #     # find_similar_rooms_tool,
+    #     # find_rooms_by_equipments_tool,
+    # ])
 
     return llm
 
-def apply_prompt_template(parsing_schema: PydanticOutputParser) -> PromptTemplate: 
+def apply_request_prompt(parsing_schema: PydanticOutputParser) -> PromptTemplate: 
     """
     Apply the prompt template to the LLM. Variables are defined in prompt_config.py
     """
     prompt_template = PromptTemplate(
         input_variables = ["user_request", "current_date", "current_time"],
-        template = TEMPLATE,
+        template = REQUEST_TEMPLATE,
         partial_variables = {
             "parsing_schema": parsing_schema.get_format_instructions(),
             "successful_example": json.dumps(SUCCESS_EXAMPLE, indent=2),
             "missing_example": json.dumps(MISSING_EXAMPLE, indent=2)
         })
     return prompt_template
+
+def apply_rooms_prompt(rooms: List[Dict]) -> PromptTemplate:
+    """
+    Generate a user-friendly message listing available rooms.
+    """
+    return PromptTemplate(
+        input_variables = ["rooms"],
+        template = ROOM_TEMPLATE
+    )
+
+# def matching_rooms_msg(rooms: List[Dict]):
+
+#     room_messages = [
+#         f"Room '{room['type']}' with a capacity of {room['capacity']} people "
+#         f"and equipped with {', '.join(room['equipments'])}."
+#         for room in rooms
+#     ]
+#     return "Here are the available rooms:\n" + "\n".join(room_messages)
 
 def message_to_dict(message):
     """
@@ -88,15 +111,15 @@ def get_missing_fields(parsed_request: dict) -> list:
     """
     Get a list of missing fields from the parsed request.
     """
+    
     return [
         field for field in REQUIRED_FIELDS
         if not parsed_request.get(field)
         or parsed_request[field] is None
         or parsed_request[field] == ""
-        or (field == "equipments" and not parsed_request[field])
-        or (field == "duration_hours" and parsed_request[field] <= 0)
     ]
-
+        # or (field == "equipments" and not parsed_request[field])
+        # or (field == "duration_hours" and parsed_request[field] <= 0)
 def load_clarification_msgs(filepath:str = MSG_JSON_FILE) -> Dict:
     """
     Load clarification messages from a JSON file.
@@ -106,17 +129,6 @@ def load_clarification_msgs(filepath:str = MSG_JSON_FILE) -> Dict:
 
 
 
-# def format_booking_rooms_msg(rooms: List[Room]):
-#     """
-#     Generate a user-friendly message listing available rooms.
-#     """
-#     room_messages = [
-#         f"Room '{room.type}' with a capacity of {room.capacity} people "
-#         f"and equipped with {', '.join(room.equipments)}."
-#         for room in rooms
-#     ]
-#     return "Here are the available rooms:\n" + "\n".join(room_messages)
-
 # def format_available_times_msg(available_times: dict) -> str:
 #     """
 #     Generate a user-friendly message listing available times for matching rooms.
@@ -125,7 +137,7 @@ def load_clarification_msgs(filepath:str = MSG_JSON_FILE) -> Dict:
 #         return "No available times found for the matching rooms."
 
 #     messages = [
-#         f"Room '{room}' is available at the following times: {', '.join(times)}"
+#         f"Room '{room}' NOT available at the following times: {', '.join(times)}"
 #         for room, times in available_times.items()
 #     ]
 #     return "Here are the available times for the matching rooms:\n" + "\n".join(messages)

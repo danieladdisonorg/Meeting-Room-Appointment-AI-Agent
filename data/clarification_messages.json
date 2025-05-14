@@ -40,26 +40,29 @@
         "May I have the name for this booking, please?",
         "Under what name should I make the reservation?",
         "Could you please tell me the name of the person making the booking?"
+    ],
+    "no_matching_rooms": "I couldn't find any rooms matching your requirements. Please try the following suggestions:\n- Reducing the required capacity\n- Adjusting the equipment requirements\n- Checking different dates or times",
+    "no_available_times": "The matching rooms are not available at your requested time. Would you like to:\n- See alternative time slots\n- Check similar rooms\n- Try a different date or time",
+    "booking_error": "I couldn't complete the booking. This might be because:\n- The room was just booked by someone else\n- There was a system error\nWould you like to try booking a different room?",
+    "end_time": [
+        "What time will the meeting end?",
+        "What is the expected end time for your booking?",
+        "Could you please specify the time your meeting will conclude?",
+        "At what time should the room reservation end?",
+        "What is the anticipated finish time for your meeting?"
+    ],
+    "room_type": [
+        "What type of room are you looking for?",
+        "Is there a specific kind of room you need (e.g., conference room, meeting room)?",
+        "What kind of room would be most suitable for your needs?",
+        "Are you looking for a particular style or setup of room?",
+        "Do you have a preference for the type of room?"
+    ],
+    "location": [
+        "In which location are you looking to book a room?",
+        "Do you have a specific location in mind?",
+        "Where would you like the room to be located?",
+        "Are there any particular location preferences you have?",
+        "Could you please specify the desired location for the room booking?"
     ]
-    // "end_time": [
-    //     "What time will the meeting end?",
-    //     "What is the expected end time for your booking?",
-    //     "Could you please specify the time your meeting will conclude?",
-    //     "At what time should the room reservation end?",
-    //     "What is the anticipated finish time for your meeting?"
-    // ],
-    // "room_type": [
-    //     "What type of room are you looking for?",
-    //     "Is there a specific kind of room you need (e.g., conference room, meeting room)?",
-    //     "What kind of room would be most suitable for your needs?",
-    //     "Are you looking for a particular style or setup of room?",
-    //     "Do you have a preference for the type of room?"
-    // ],
-    // "location": [
-    //     "In which location are you looking to book a room?",
-    //     "Do you have a specific location in mind?",
-    //     "Where would you like the room to be located?",
-    //     "Are there any particular location preferences you have?",
-    //     "Could you please specify the desired location for the room booking?"
-    // ]
 }

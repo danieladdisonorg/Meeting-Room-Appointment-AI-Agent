@@ -44,7 +44,7 @@ def booking():
     session['agent_state']['messages'] = [dict_to_message(msg) for msg in session['agent_state']['messages']]
 
     ######################## Process through workflow ########################
-    logger.info(" >>>>> Processing through workflow, user input: %s", session['agent_state'])
+    logger.info(" >>>>> Processing through workflow, user input: %s")#, session['agent_state'])
     response = workflow.invoke(session['agent_state'])
     # 1. save LLM response to agent state in the session and 
     # Extract only the latest assistant message
