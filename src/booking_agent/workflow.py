@@ -46,11 +46,11 @@ def create_workflow():
     workflow.add_node(HANDLE_ERROR, handle_error)
     workflow.add_node(FIND_MATCHING_ROOMS, lambda state: find_matching_rooms(state, llm))
     workflow.add_node("test", lambda state: "All is good")
-    # workflow.add_node(FIND_BOOKING_OPTIONS, find_booking_options)
-    # workflow.add_node(SEARCH_ALTERNATIVE_ROOMS, search_alternative_rooms)
-    # workflow.add_node(CHOOSE_ALTERNATIVE_ROOMS, select_room)
-    # workflow.add_node(CONFIRM_BOOKING, confirm_booking)
-    # workflow.add_node(INFORM_USER, inform_user)
+    workflow.add_node(FIND_BOOKING_OPTIONS, find_booking_options)
+    workflow.add_node(SEARCH_ALTERNATIVE_ROOMS, search_alternative_rooms)
+    workflow.add_node(CHOOSE_ALTERNATIVE_ROOMS, select_room)
+    workflow.add_node(CONFIRM_BOOKING, confirm_booking)
+    workflow.add_node(INFORM_USER, inform_user)
 
     #########################################################################
     # SET EDGES
@@ -83,54 +83,49 @@ def create_workflow():
     #########################################################################
     workflow.set_entry_point(PARSE_REQUEST)
 
-    return workflow.compile()
+    # Edge: Find booking options -> Confirm booking or Handle error
+    workflow.add_conditional_edges(
+        FIND_BOOKING_OPTIONS,
+        lambda state: True if len(state.get("available_rooms", [])) > 0 else False,
+        {
+            True: CONFIRM_BOOKING,
+            False: HANDLE_ERROR
+        }
+    )
 
-
-
-    # # Edge: Find booking options -> Confirm booking or Handle error
-    # workflow.add_conditional_edges(
-    #     FIND_BOOKING_OPTIONS,
-    #     lambda state: True if len(state.get("available_rooms", [])) > 0 else False,
-    #     {
-    #         True: CONFIRM_BOOKING,
-    #         False: HANDLE_ERROR
-    #     }
-    # )
-
-    # # Edge: Confirm booking -> Inform user or Handle error
-    # workflow.add_conditional_edges(
-    #     CONFIRM_BOOKING,
-    #     lambda state: state.get("booking_result", False),
-    #     {
-    #         True: INFORM_USER,
-    #         False: HANDLE_ERROR
-    #     }
-    # )
+    # Edge: Confirm booking -> Inform user or Handle error
+    workflow.add_conditional_edges(
+        CONFIRM_BOOKING,
+        lambda state: state.get("booking_result", False),
+        {
+            True: INFORM_USER,
+            False: HANDLE_ERROR
+        }
+    )
     
-    # # Edge: Search alternative rooms -> Choose alternative or Ask clarification
-    # workflow.add_conditional_edges(
-    #     SEARCH_ALTERNATIVE_ROOMS,
-    #     lambda state: True if len(state.get("alternative_rooms", [])) > 0 else False,
-    #     {
-    #         True: CHOOSE_ALTERNATIVE_ROOMS,
-    #         False: ASK_CLARIFICATION  # Ask user if they want to modify their requirements
-    #     }
-    # )
+    # Edge: Search alternative rooms -> Choose alternative or Ask clarification
+    workflow.add_conditional_edges(
+        SEARCH_ALTERNATIVE_ROOMS,
+        lambda state: True if len(state.get("alternative_rooms", [])) > 0 else False,
+        {
+            True: CHOOSE_ALTERNATIVE_ROOMS,
+            False: ASK_CLARIFICATION  # Ask user if they want to modify their requirements
+        }
+    )
 
-    # # Edge: Ask clarification -> Find matching rooms
-    # workflow.add_conditional_edges(
-    #     HANDLE_ERROR,
-    #     lambda state: state.get("clarification_needed", False),
-    #     {
-    #         True: ASK_CLARIFICATION,
-    #         False: END
-    #     }
-    # )
+    # Edge: Ask clarification -> Find matching rooms
+    workflow.add_conditional_edges(
+        HANDLE_ERROR,
+        lambda state: state.get("clarification_needed", False),
+        {
+            True: ASK_CLARIFICATION,
+            False: END
+        }
+    )
 
     # Edge: Choose alternative rooms -> Confirm booking
-    # workflow.add_edge(CHOOSE_ALTERNATIVE_ROOMS, CONFIRM_BOOKING)
+    workflow.add_edge(CHOOSE_ALTERNATIVE_ROOMS, CONFIRM_BOOKING)
     # Edge: Inform user -> End
-    # workflow.add_edge(INFORM_USER, END)
+    workflow.add_edge(INFORM_USER, END)
 
-    # workflow.add_edge(ASK_CLARIFICATION, USER_INPUT)
-    # workflow.add_edge(USER_INPUT, PARSE_REQUEST)
+    return workflow.compile()

@@ -43,31 +43,31 @@ def find_matching_rooms_tool(existing_rooms: List[Dict], capacity: int, equipmen
             matching_rooms.append(room)
     return matching_rooms
 
-# @tool("find_similar_rooms", description="Find rooms with similar equipment and capacity.")
-# def find_similar_rooms_tool(capacity: int, equipments: list, top_n: int = 3) -> List[Dict]:
-#     rooms = load_rooms()
-#     scored_rooms = []
-#     for room in rooms:
-#         if room.capacity >= capacity:
-#             overlap = len(set(room.equipments) & set(equipments))
-#             scored_rooms.append((overlap, room))
-#     scored_rooms.sort(reverse=True, key=lambda x: x[0])
-#     return [room for overlap, room in scored_rooms if overlap > 0][:top_n]
+@tool("find_similar_rooms", description="Find rooms with similar equipment and capacity.")
+def find_similar_rooms_tool(capacity: int, equipments: list, top_n: int = 3) -> List[Dict]:
+    rooms = load_rooms()
+    scored_rooms = []
+    for room in rooms:
+        if room.capacity >= capacity:
+            overlap = len(set(room.equipments) & set(equipments))
+            scored_rooms.append((overlap, room))
+    scored_rooms.sort(reverse=True, key=lambda x: x[0])
+    return [room for overlap, room in scored_rooms if overlap > 0][:top_n]
 
-# @tool("find_rooms_by_equipments", description="Find rooms that have all the specified equipment.")
-# def find_rooms_by_equipments_tool(equipments: List[str]) -> List[Room]:
-#     rooms = load_rooms()
-#     matching_rooms = []
-#     for room in rooms:
-#         if all(feature in room.equipments for feature in equipments):
-#             matching_rooms.append(room)
-#     return matching_rooms
+@tool("find_rooms_by_equipments", description="Find rooms that have all the specified equipment.")
+def find_rooms_by_equipments_tool(equipments: List[str]) -> List[Room]:
+    rooms = load_rooms()
+    matching_rooms = []
+    for room in rooms:
+        if all(feature in room.equipments for feature in equipments):
+            matching_rooms.append(room)
+    return matching_rooms
 
-# @tool("find_rooms_by_capacity", description="Find rooms that have a capacity greater than or equal to the specified value.")
-# def find_rooms_by_capacity_tool(capacity: int) -> List[Room]:
-#     rooms = load_rooms()
-#     matching_rooms = []
-#     for room in rooms:
-#         if room.capacity >= capacity:
-#             matching_rooms.append(room)
-#     return matching_rooms
+@tool("find_rooms_by_capacity", description="Find rooms that have a capacity greater than or equal to the specified value.")
+def find_rooms_by_capacity_tool(capacity: int) -> List[Room]:
+    rooms = load_rooms()
+    matching_rooms = []
+    for room in rooms:
+        if room.capacity >= capacity:
+            matching_rooms.append(room)
+    return matching_rooms

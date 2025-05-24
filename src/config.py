@@ -9,8 +9,6 @@ from dotenv import load_dotenv
 from datetime import timedelta, datetime
 
 # Load Environment Variables
-# dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-# load_dotenv(dotenv_path=dotenv_path, override=True)
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(PROJECT_DIR / '.env', override=True)

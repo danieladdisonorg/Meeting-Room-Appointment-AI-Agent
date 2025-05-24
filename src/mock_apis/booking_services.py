@@ -62,34 +62,34 @@ def check_time_conflict_tool(
             return True
     return False
 
-# def get_room_reserved_time_slots(
-#         room_id: Union[int, str], 
-#         existing_bookings: Dict[str, List[Dict[str, Union[str, datetime]]]]) -> List[Dict]:
+def get_room_reserved_time_slots(
+        room_id: Union[int, str], 
+        existing_bookings: Dict[str, List[Dict[str, Union[str, datetime]]]]) -> List[Dict]:
     
-#     free_time_slots = []
-#     room_id = str(room_id)
+    free_time_slots = []
+    room_id = str(room_id)
     
-#     return free_time_slots
+    return free_time_slots
 
 
-# @tool("book_room", description="Book a room for the specified time and user.")
-# def book_room_tool(
-#         room_id: int, start_time: str, 
-#         end_time: str, user_name: str
-#     ) -> Optional[Booking]:
-#     """Book a room for the specified time and user."""
-#     existing_bookings = load_bookings()
-#     if check_time_conflict_tool(
-#         room_id, start_time, duration_hours=int((datetime.fromisoformat(end_time) - datetime.fromisoformat(start_time)).total_seconds() / 3600)
-#     ):
-#         return None
-#     booking = Booking(
-#         room_id=room_id,
-#         start_time=start_time,
-#         end_time=end_time,
-#         booked_by=user_name,
-#     )
-#     existing_bookings.append(booking)
-#     save_bookings_tool(existing_bookings)
-#     return booking
+@tool("book_room", description="Book a room for the specified time and user.")
+def book_room_tool(
+        room_id: int, start_time: str, 
+        end_time: str, user_name: str
+    ) -> Optional[Booking]:
+    """Book a room for the specified time and user."""
+    existing_bookings = load_bookings()
+    if check_time_conflict_tool(
+        room_id, start_time, duration_hours=int((datetime.fromisoformat(end_time) - datetime.fromisoformat(start_time)).total_seconds() / 3600)
+    ):
+        return None
+    booking = Booking(
+        room_id=room_id,
+        start_time=start_time,
+        end_time=end_time,
+        booked_by=user_name,
+    )
+    existing_bookings.append(booking)
+    save_bookings_tool(existing_bookings)
+    return booking
 

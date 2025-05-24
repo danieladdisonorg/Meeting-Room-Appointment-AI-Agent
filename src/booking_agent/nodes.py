@@ -165,189 +165,6 @@ def find_booking_options(state: AgentState) -> AgentState:
     logger.info(" >>>>>>> AVAILABLE ROOMS:", state.get("available_rooms", "NO FREE AVAILABLE ROOMS"))
     return state
 
-# def select_room(state: AgentState) -> AgentState:
-#     """
-#     Select a room from the available alternatives.
-#     """
-#     logger.info(" ------------------ NODE: SELECT ROOM ------------------ ")
-    
-#     try:
-#         available_rooms = state.get("alternative_rooms", [])
-#         if available_rooms:
-#             selected = available_rooms[0]
-#             state["selected_room"] = selected
-#             state["llm_response"] = (
-#                 f"I've selected {selected.name} for you which has:\n"
-#                 f"- Capacity: {selected.capacity} people\n"
-#                 f"- Equipment: {', '.join(selected.equipments)}"
-#             )
-#         else:
-#             state["selected_room"] = None
-#             state["llm_response"] = "No suitable room found to select."
-            
-#     except Exception as e:
-#         logger.error(f"Error selecting room: {str(e)}")
-#         state["error_message"] = f"Failed to select room: {str(e)}"
-#         state["selected_room"] = None
-#         state["llm_response"] = "Sorry, I encountered an error while selecting a room."
-    
-#     state["messages"].append(SystemMessage(content=state["llm_response"]))
-#     return state
-
-# def suggest_alternative_times(state: AgentState) -> AgentState:
-#     """
-#     For rooms that match requirements but are not available at the requested time,
-#     the agent should find and suggest their next available time slots.
-#     """
-#     logger.info(" ------------------ NODE: SEARCH ALTERNATIVE TIMES ------------------ ")
-    
-#     try:
-#         if not state.get("selected_room"):
-#             raise ValueError("No room selected to find alternatives for")
-            
-#         alternative_times = {}
-#         for room in state.get("matching_rooms", []):
-#             times = check_time_conflict_tool(
-#                 room_id=room.id,
-#                 start_time=state["parsed_request"]["start_time"],
-#                 duration_hours=state["parsed_request"]["duration_hours"]
-#             )
-#             if times:
-#                 alternative_times[room.id] = times
-
-#         if alternative_times:
-#             state["llm_response"] = format_available_times_msg(alternative_times)
-#         else:
-#             state["llm_response"] = "Sorry, I couldn't find any alternative times for the rooms."
-#             state["error_message"] = "No alternative times available"
-            
-#     except Exception as e:
-#         logger.error(f"Error finding alternative times: {str(e)}")
-#         state["error_message"] = f"Failed to find alternative times: {str(e)}"
-#         state["llm_response"] = "Sorry, I encountered an error while searching for alternative times."
-    
-#     state["messages"].append(SystemMessage(content=state["llm_response"]))
-#     return state
-
-# def confirm_booking(state: AgentState) -> AgentState:
-#     """
-#     Complete the booking process and save the booking record.
-#     """
-#     logger.info(" ------------------ NODE: CONFIRM BOOKING ------------------ ")
-    
-#     try:
-#         if not state.get("selected_room"):
-#             raise ValueError("No room selected for booking")
-            
-#         booking_data = state["parsed_request"]
-#         room = state["selected_room"]
-        
-#         end_time = datetime.fromisoformat(booking_data["start_time"]) + \
-#                    timedelta(hours=booking_data["duration_hours"])
-        
-#         # Create the booking using the tool
-#         booking_result = book_room_tool(
-#             room_id=room.id,
-#             start_time=booking_data["start_time"],
-#             end_time=end_time.isoformat(),
-#             user_name=booking_data["user_name"]
-#         )
-        
-#         state["booking_result"] = True if booking_result else False
-#         if booking_result:
-#             state["user_booking_confirmation"] = "yes"
-#             state["llm_response"] = f"Successfully booked {room.name} for you!"
-#         else:
-#             raise ValueError("Booking creation failed")
-            
-#     except Exception as e:
-#         logger.error(f"Booking failed: {str(e)}")
-#         state["booking_result"] = False
-#         state["error_message"] = f"Failed to complete the booking: {str(e)}"
-#         state["user_booking_confirmation"] = "no"
-    
-#     return state
-
-# def search_alternative_rooms(state: AgentState) -> AgentState:
-#     """
-#     Search for alternative rooms when no exact matches are found.
-#     Uses similarity matching to find rooms with close specifications.
-#     """
-#     logger.info(" ------------------ NODE: SEARCH ALTERNATIVE ROOMS ------------------ ")
-    
-#     try:
-#         capacity = state["parsed_request"]["capacity"]
-#         equipments = state["parsed_request"].get("equipments", [])
-        
-#         # Find similar rooms using the similarity tool
-#         alternative_rooms = find_similar_rooms_tool(
-#             capacity=capacity,
-#             equipments=equipments
-#         )
-        
-#         state["alternative_rooms"] = alternative_rooms if alternative_rooms else []
-        
-#         if alternative_rooms:
-#             logger.info(f" >>>>>>> FOUND {len(alternative_rooms)} ALTERNATIVE ROOMS")
-#             state["llm_response"] = "I found some alternative rooms that might work for you: \n" + \
-#                 "\n".join([f"- {room.name}: Capacity {room.capacity}, Equipment: {', '.join(room.equipments)}"
-#                           for room in alternative_rooms])
-#         else:
-#             logger.info(" >>>>>>> NO ALTERNATIVE ROOMS FOUND")
-#             state["llm_response"] = "I couldn't find any alternative rooms matching your requirements."
-            
-#     except Exception as e:
-#         logger.error(f"Error finding alternative rooms: {str(e)}")
-#         state["error_message"] = f"Failed to find alternative rooms: {str(e)}"
-#         state["alternative_rooms"] = []
-#         state["llm_response"] = "Sorry, I encountered an error while searching for alternative rooms."
-    
-#     state["messages"].append(SystemMessage(content=state["llm_response"]))
-#     return state
-
-# def inform_user(state: AgentState) -> AgentState:
-#     """
-#     Inform the user about the booking status and provide relevant information.
-#     """
-#     logger.info(" ------------------ NODE: INFORM USER ------------------ ")
-    
-#     try:
-#         if state.get("booking_result"):
-#             booking = state.get("parsed_request", {})
-#             room = state.get("selected_room", {})
-            
-#             # Handle equipment list formatting
-#             equipments = room.get("equipments", [])
-#             equipment_str = ", ".join(equipments) if equipments else "No special equipment"
-            
-#             state["llm_response"] = (
-#                 f"Great! I've successfully booked {room.get('name', 'the room')} for you:\n"
-#                 f"- Date: {booking.get('start_date', 'N/A')}\n"
-#                 f"- Time: {booking.get('start_time', 'N/A')} "
-#                 f"(for {booking.get('duration_hours', 0)} hours)\n"
-#                 f"- Booked under: {booking.get('user_name', 'N/A')}\n"
-#                 f"- Room capacity: {room.get('capacity', 'N/A')} people\n"
-#                 f"- Equipment: {equipment_str}\n\n"
-#                 f"Your booking has been confirmed and saved. You'll receive a notification "
-#                 f"with the booking details."
-#             )
-#         else:
-#             state["llm_response"] = (
-#                 "I'm sorry, but the booking couldn't be completed. "
-#                 "Would you like to:\n"
-#                 "- Try booking a different room\n"
-#                 "- Check alternative time slots\n"
-#                 "- Start a new search"
-#             )
-#             state["clarification_needed"] = True
-            
-#     except Exception as e:
-#         logger.error(f"Error formatting user response: {str(e)}")
-#         state["error_message"] = f"Failed to format response: {str(e)}"
-#         state["llm_response"] = "Sorry, I encountered an error while preparing the booking confirmation."
-    
-#     state["messages"].append(SystemMessage(content=state["llm_response"]))
-#     return state
 
 # NODE [03]. Handle Error Node
 def handle_error(state: AgentState) -> AgentState:
@@ -371,4 +188,188 @@ def handle_error(state: AgentState) -> AgentState:
     state["messages"].append(SystemMessage(content=error_msg))
     state["error_message"] = error_msg
 
+    return state
+
+def select_room(state: AgentState) -> AgentState:
+    """
+    Select a room from the available alternatives.
+    """
+    logger.info(" ------------------ NODE: SELECT ROOM ------------------ ")
+    
+    try:
+        available_rooms = state.get("alternative_rooms", [])
+        if available_rooms:
+            selected = available_rooms[0]
+            state["selected_room"] = selected
+            state["llm_response"] = (
+                f"I've selected {selected.name} for you which has:\n"
+                f"- Capacity: {selected.capacity} people\n"
+                f"- Equipment: {', '.join(selected.equipments)}"
+            )
+        else:
+            state["selected_room"] = None
+            state["llm_response"] = "No suitable room found to select."
+            
+    except Exception as e:
+        logger.error(f"Error selecting room: {str(e)}")
+        state["error_message"] = f"Failed to select room: {str(e)}"
+        state["selected_room"] = None
+        state["llm_response"] = "Sorry, I encountered an error while selecting a room."
+    
+    state["messages"].append(SystemMessage(content=state["llm_response"]))
+    return state
+
+def suggest_alternative_times(state: AgentState) -> AgentState:
+    """
+    For rooms that match requirements but are not available at the requested time,
+    the agent should find and suggest their next available time slots.
+    """
+    logger.info(" ------------------ NODE: SEARCH ALTERNATIVE TIMES ------------------ ")
+    
+    try:
+        if not state.get("selected_room"):
+            raise ValueError("No room selected to find alternatives for")
+            
+        alternative_times = {}
+        for room in state.get("matching_rooms", []):
+            times = check_time_conflict_tool(
+                room_id=room.id,
+                start_time=state["parsed_request"]["start_time"],
+                duration_hours=state["parsed_request"]["duration_hours"]
+            )
+            if times:
+                alternative_times[room.id] = times
+
+        if alternative_times:
+            state["llm_response"] = format_available_times_msg(alternative_times)
+        else:
+            state["llm_response"] = "Sorry, I couldn't find any alternative times for the rooms."
+            state["error_message"] = "No alternative times available"
+            
+    except Exception as e:
+        logger.error(f"Error finding alternative times: {str(e)}")
+        state["error_message"] = f"Failed to find alternative times: {str(e)}"
+        state["llm_response"] = "Sorry, I encountered an error while searching for alternative times."
+    
+    state["messages"].append(SystemMessage(content=state["llm_response"]))
+    return state
+
+def confirm_booking(state: AgentState) -> AgentState:
+    """
+    Complete the booking process and save the booking record.
+    """
+    logger.info(" ------------------ NODE: CONFIRM BOOKING ------------------ ")
+    
+    try:
+        if not state.get("selected_room"):
+            raise ValueError("No room selected for booking")
+            
+        booking_data = state["parsed_request"]
+        room = state["selected_room"]
+        
+        end_time = datetime.fromisoformat(booking_data["start_time"]) + \
+                   timedelta(hours=booking_data["duration_hours"])
+        
+        # Create the booking using the tool
+        booking_result = book_room_tool(
+            room_id=room.id,
+            start_time=booking_data["start_time"],
+            end_time=end_time.isoformat(),
+            user_name=booking_data["user_name"]
+        )
+        
+        state["booking_result"] = True if booking_result else False
+        if booking_result:
+            state["user_booking_confirmation"] = "yes"
+            state["llm_response"] = f"Successfully booked {room.name} for you!"
+        else:
+            raise ValueError("Booking creation failed")
+            
+    except Exception as e:
+        logger.error(f"Booking failed: {str(e)}")
+        state["booking_result"] = False
+        state["error_message"] = f"Failed to complete the booking: {str(e)}"
+        state["user_booking_confirmation"] = "no"
+    
+    return state
+
+def search_alternative_rooms(state: AgentState) -> AgentState:
+    """
+    Search for alternative rooms when no exact matches are found.
+    Uses similarity matching to find rooms with close specifications.
+    """
+    logger.info(" ------------------ NODE: SEARCH ALTERNATIVE ROOMS ------------------ ")
+    
+    try:
+        capacity = state["parsed_request"]["capacity"]
+        equipments = state["parsed_request"].get("equipments", [])
+        
+        # Find similar rooms using the similarity tool
+        alternative_rooms = find_similar_rooms_tool(
+            capacity=capacity,
+            equipments=equipments
+        )
+        
+        state["alternative_rooms"] = alternative_rooms if alternative_rooms else []
+        
+        if alternative_rooms:
+            logger.info(f" >>>>>>> FOUND {len(alternative_rooms)} ALTERNATIVE ROOMS")
+            state["llm_response"] = "I found some alternative rooms that might work for you: \n" + \
+                "\n".join([f"- {room.name}: Capacity {room.capacity}, Equipment: {', '.join(room.equipments)}"
+                          for room in alternative_rooms])
+        else:
+            logger.info(" >>>>>>> NO ALTERNATIVE ROOMS FOUND")
+            state["llm_response"] = "I couldn't find any alternative rooms matching your requirements."
+            
+    except Exception as e:
+        logger.error(f"Error finding alternative rooms: {str(e)}")
+        state["error_message"] = f"Failed to find alternative rooms: {str(e)}"
+        state["alternative_rooms"] = []
+        state["llm_response"] = "Sorry, I encountered an error while searching for alternative rooms."
+    
+    state["messages"].append(SystemMessage(content=state["llm_response"]))
+    return state
+
+def inform_user(state: AgentState) -> AgentState:
+    """
+    Inform the user about the booking status and provide relevant information.
+    """
+    logger.info(" ------------------ NODE: INFORM USER ------------------ ")
+    
+    try:
+        if state.get("booking_result"):
+            booking = state.get("parsed_request", {})
+            room = state.get("selected_room", {})
+            
+            # Handle equipment list formatting
+            equipments = room.get("equipments", [])
+            equipment_str = ", ".join(equipments) if equipments else "No special equipment"
+            
+            state["llm_response"] = (
+                f"Great! I've successfully booked {room.get('name', 'the room')} for you:\n"
+                f"- Date: {booking.get('start_date', 'N/A')}\n"
+                f"- Time: {booking.get('start_time', 'N/A')} "
+                f"(for {booking.get('duration_hours', 0)} hours)\n"
+                f"- Booked under: {booking.get('user_name', 'N/A')}\n"
+                f"- Room capacity: {room.get('capacity', 'N/A')} people\n"
+                f"- Equipment: {equipment_str}\n\n"
+                f"Your booking has been confirmed and saved. You'll receive a notification "
+                f"with the booking details."
+            )
+        else:
+            state["llm_response"] = (
+                "I'm sorry, but the booking couldn't be completed. "
+                "Would you like to:\n"
+                "- Try booking a different room\n"
+                "- Check alternative time slots\n"
+                "- Start a new search"
+            )
+            state["clarification_needed"] = True
+            
+    except Exception as e:
+        logger.error(f"Error formatting user response: {str(e)}")
+        state["error_message"] = f"Failed to format response: {str(e)}"
+        state["llm_response"] = "Sorry, I encountered an error while preparing the booking confirmation."
+    
+    state["messages"].append(SystemMessage(content=state["llm_response"]))
     return state

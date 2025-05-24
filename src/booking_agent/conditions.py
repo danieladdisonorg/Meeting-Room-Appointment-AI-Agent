@@ -31,15 +31,15 @@ def is_clear_request(state: AgentState) -> str:
 
 
 # CONDITION [2]. Check if user confirm booking
-# def is_confirmed(state: AgentState) -> bool:
-#     logger.info(" --->>>> CONDITION: Check if user confirm booking <<<<--- ")
-#     if state["user_booking_confirmation"].lower() in ["yes", "y"]:
-#         return True
-#     else:
-#         state["clarification_needed"] = True
-#         state["clarification_question"] = "Booking Not Confimed. Do you want to book another room?"
-#         return False
+def is_confirmed(state: AgentState) -> bool:
+    logger.info(" --->>>> CONDITION: Check if user confirm booking <<<<--- ")
+    if state["user_booking_confirmation"].lower() in ["yes", "y"]:
+        return True
+    else:
+        state["clarification_needed"] = True
+        state["clarification_question"] = "Booking Not Confimed. Do you want to book another room?"
+        return False
 
-# def should_suggest_alternatives(state: AgentState) -> bool:
+def should_suggest_alternatives(state: AgentState) -> bool:
     
-#     return len(state.get("available_rooms", [])) == 0
+    return len(state.get("available_rooms", [])) == 0
