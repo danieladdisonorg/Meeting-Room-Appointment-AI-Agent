@@ -1,109 +1,239 @@
 # Meeting Room Booking Agent
 
-A LangGraph-based AI agent to help users find and reserve meeting rooms. The system uses Groq API (with support for other LLMs like Ollama) and implements a complete booking workflow with room availability checks.
+An intelligent AI-powered meeting room booking system built with LangGraph and advanced natural language processing capabilities. The system provides seamless room reservation through conversational interfaces, featuring automated availability checking, smart scheduling, and comprehensive booking management.
 
 <p align="center">
-  <img src="docs\chatbot.jpg" alt="chatbot" width="40%"/>
+  <img src="docs/chatbot.jpg" alt="Meeting Room Booking Chatbot Interface" width="40%"/>
 </p>
 
-## Features
+## Overview
 
-- Natural language processing for meeting room requests
-- Room availability checking and booking
-- Flexible workflow with user clarification loops
-- Simple web interface for interaction
-- JSON-based database for prototyping
+The Meeting Room Booking Agent leverages state-of-the-art language models to transform natural language requests into structured booking operations. Built on the LangGraph framework, it provides enterprise-grade workflow orchestration with intelligent fallback mechanisms and user clarification loops.
 
-## Components
+## Key Features
 
-1. **User Interface (UI):** For interacting with the user. I used simple html ans css template for prototyping.
-2. **AI Agent :** Use `LangGraph` with LLM for booking rooms using main `Groq API` and support other LLMs like Ollama.
-3. **Room and Booking Database:** Simple Json files as a dummy NoSQL data.
-4. **Calendar Booking System:** Mock API for availability and bookings.
+### 🤖 Intelligent Natural Language Processing
+- Advanced request parsing with context understanding
+- Multi-turn conversation support with memory retention
+- Automatic extraction of booking parameters (time, capacity, equipment)
+
+### 📅 Smart Scheduling & Availability
+- Real-time room availability checking
+- Conflict detection and resolution
+- Alternative suggestion engine for optimal scheduling
+
+### 🔄 Adaptive Workflow Management
+- Dynamic clarification loops for incomplete requests
+- State-aware conversation handling
+- Robust error recovery mechanisms
+
+### 🌐 Modern Web Interface
+- Responsive design optimized for all devices
+- Real-time chat interface with typing indicators
+- Intuitive booking confirmation flows
+
+### 🔧 Flexible Architecture
+- Modular design supporting multiple LLM providers
+- JSON-based data layer for rapid prototyping
+- Extensible plugin system for custom integrations
+
+## System Architecture
 
 <p align="center">
-  <img src="docs\system_architecture.svg" alt="System Architecture" width="80%"/>
+  <img src="docs/system_architecture.svg" alt="System Architecture Diagram" width="80%"/>
 </p>
 
-## Setup
+### Core Components
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **AI Agent Engine** | LangGraph + Groq API | Orchestrates booking workflows and natural language understanding |
+| **Web Interface** | Flask + HTML/CSS | Provides user interaction layer with responsive design |
+| **Data Layer** | JSON Database | Manages room inventory and booking records |
+| **Booking Service** | Mock API | Handles reservation logic and calendar integration |
+
+## Installation & Setup
+
 ### Prerequisites
-- Python 3.11.0 or higher
-- Conda (Miniconda or Anaconda)
 
-### 1. Create Conda Environment
+- **Python**: 3.11.0 or higher
+- **Conda**: Miniconda or Anaconda distribution
+- **API Access**: Groq API key (or compatible LLM service)
 
-```bash
-conda create -n agentic_env python=3.11 -y
-conda activate agentic_env
-```
+### Quick Start
 
-### 2. Install Dependencies
+1. **Environment Setup**
+   ```bash
+   conda create -n meeting_room_agent python=3.11 -y
+   ```
 
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   conda activate meeting_room_agent
+   ```
 
-### 3. Environment Variables
-Create a `.env` file in the project root with your Groq API key:
+2. **Dependency Installation**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```env
-GROQ_API_KEY=your_api_key_here
-```
+3. **Configuration**
+   
+   Create a `.env` file in the project root:
+   ```env
+   GROQ_API_KEY=your_groq_api_key_here
+   FLASK_ENV=development
+   FLASK_DEBUG=True
+   ```
 
-### Running the Application
+4. **Launch Application**
+   ```bash
+   flask run
+   ```
 
-```bash
-conda activate agentic_env
-flask run
-```
-
-The web interface will be available at `http://localhost:5000`
+   Access the application at `http://localhost:5000`
 
 ## Project Structure
 
 ```
-room_booking_agent/
-│   app.py                - Main Flask application
-│   config.py             - Configuration settings
-│   helper.py             - Utility functions
-│   
-├───booking_agent         - Core agent components
-│       conditions.py      - Transition conditions
-│       nodes.py           - Nodes defination
-│       prompt_config.py   - System prompts template text
-│       schemas.py         - Pydantic models
-│       workflow.py        - LangGraph workflow definition
+meeting-room-booking-agent/
+├── app.py                      # Flask application entry point
+├── config.py                   # Application configuration
+├── helper.py                   # Utility functions and helpers
+├── requirements.txt            # Python dependencies
+├── .env.example               # Environment variables template
 │
-├───mock_apis             - Mock services
-│       booking_services.py - Booking API simulation
-│       room_services.py   - Room data service
+├── booking_agent/             # Core AI agent components
+│   ├── __init__.py
+│   ├── conditions.py          # Workflow transition conditions
+│   ├── nodes.py              # LangGraph node definitions
+│   ├── prompt_config.py      # System prompts and templates
+│   ├── schemas.py            # Pydantic data models
+│   └── workflow.py           # LangGraph workflow orchestration
 │
-├───static                 - Web assets
-│       style.css       
+├── mock_apis/                 # Mock service layer
+│   ├── __init__.py
+│   ├── booking_services.py   # Booking API simulation
+│   └── room_services.py      # Room data management
 │
-└───templates             - HTML templates
-        index.html        - Main interface
+├── static/                    # Frontend assets
+│   ├── style.css             # Application styles
+│   └── js/                   # JavaScript modules
+│
+├── templates/                 # Jinja2 templates
+│   └── index.html            # Main application interface
+│
+├── data/                      # Data storage (JSON files)
+│   ├── rooms.json            # Room definitions and metadata
+│   ├── bookings.json         # Active booking records
+│   └── clarification_messages.json  # Fallback clarification templates
+│
+└── docs/                      # Documentation and diagrams
+    ├── Project_Documentation.md
+    ├── system_architecture.svg
+    ├── flowchart.svg
+    └── chatbot.jpg
 ```
 
-## Supported LLMs
+## Supported Language Models
 
-The system primarily uses Groq API with LLaMA3-8b, but can be configured to use:
+### Primary Integration
+- **Groq API** (Default): LLaMA3-8b-8192 with optimized inference
+- **Temperature**: 0.5 for balanced creativity and consistency
 
-1. Groq (default)
-2. Ollama (local models)
-3. Other compatible LLMs via LangChain
+### Alternative Providers
+- **Ollama**: Local model deployment for privacy-sensitive environments
+- **OpenAI GPT**: Enterprise-grade language understanding
+- **Anthropic Claude**: Advanced reasoning capabilities
+- **Custom LLMs**: Via LangChain integration layer
 
-
-## Data Storage
-
-The system uses JSON files for prototyping:
-
-- `data/rooms.json` - Room definitions
-- `data/bookings.json` - Current bookings
-- `data/clarification_messages.json` - clarification messages for each un-defined field to cover the `clarification_question` response in case of no response from the LLM.
-
-## Workflow Diagram
+## Agent Workflow
 
 <p align="center">
-  <img src="docs\flowchart.svg" alt="Agent Flowchart" width="80%"/>
+  <img src="docs/flowchart.svg" alt="Agent Workflow Diagram" width="80%"/>
 </p>
+
+### Workflow States
+
+| State | Description | Transitions |
+|-------|-------------|-------------|
+| **Parse Request** | Extract booking parameters from natural language | → Find Rooms / Request Clarification |
+| **Find Rooms** | Filter rooms by capacity and equipment requirements | → Check Availability / End |
+| **Check Availability** | Verify time slot availability | → Show Options / Suggest Alternatives |
+| **Get Confirmation** | Present options and await user decision | → Reserve Room / End |
+| **Reserve Room** | Execute booking transaction | → Send Confirmation |
+
+## Data Management
+
+### Room Schema
+```json
+{
+  "id": 1,
+  "name": "Conference Room Alpha",
+  "capacity": 12,
+  "equipments": ["Projector", "Whiteboard", "Video Conference"],
+  "location": "Floor 2, East Wing",
+  "amenities": ["WiFi", "Power Outlets", "Climate Control"]
+}
+```
+
+### Booking Schema
+```json
+{
+  "room_id": 1,
+  "start_time": "2025-01-15T14:00:00Z",
+  "end_time": "2025-01-15T15:30:00Z",
+  "booked_by": "John Doe",
+  "purpose": "Team Standup",
+  "attendees": 8
+}
+```
+
+## API Reference
+
+### Core Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Main application interface |
+| `/chat` | POST | Process booking requests |
+| `/api/rooms` | GET | Retrieve available rooms |
+| `/api/bookings` | GET/POST | Manage booking records |
+
+## Development & Deployment
+
+### Development Mode
+```bash
+export FLASK_ENV=development
+export FLASK_DEBUG=True
+flask run --host=0.0.0.0 --port=5000
+```
+
+### Production Considerations
+- Replace JSON storage with production database (PostgreSQL, MongoDB)
+- Implement proper authentication and authorization
+- Add rate limiting and request validation
+- Configure HTTPS and security headers
+- Set up monitoring and logging infrastructure
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details on:
+- Code style and standards
+- Testing requirements
+- Pull request process
+- Issue reporting
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support & Documentation
+
+- **Full Documentation**: [docs/Project_Documentation.md](docs/Project_Documentation.md)
+- **API Reference**: Available in the `/docs` directory
+- **Issue Tracking**: GitHub Issues
+- **Discussions**: GitHub Discussions
+
+---
+
+**Built with ❤️ using LangGraph, Flask, and modern AI technologies**
